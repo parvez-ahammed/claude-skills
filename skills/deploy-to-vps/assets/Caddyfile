@@ -1,0 +1,18 @@
+# Caddy auto-TLS reverse proxy. Replace the domain. Requires the domain's A record
+# to point at this VPS (DNS-only / grey cloud on Cloudflare) and ports 80/443 open,
+# so Caddy's ACME HTTP-01 / TLS-ALPN challenge can validate.
+your.domain.example {
+	encode zstd gzip
+	reverse_proxy api:8080   # service name + port from docker-compose.yml
+}
+
+# To run BEHIND Cloudflare proxy (orange cloud) instead, HTTP-01 won't work.
+# Use the DNS-01 challenge with a Cloudflare API token (needs the caddy-dns/cloudflare
+# build) or a Cloudflare Origin Certificate + SSL mode Full(strict). Example DNS-01:
+#
+# your.domain.example {
+# 	tls {
+# 		dns cloudflare {env.CF_API_TOKEN}
+# 	}
+# 	reverse_proxy api:8080
+# }

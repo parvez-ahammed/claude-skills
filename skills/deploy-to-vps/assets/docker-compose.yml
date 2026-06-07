@@ -1,0 +1,50 @@
+# Generic backend-on-VPS compose. Adapt service/build paths and the API port.
+# Secrets arrive via ./app.env (rendered by CI from GitHub Secrets, never committed).
+# Caddy is the only thing publishing 80/443; the API is reachable only on the
+# internal network (so external traffic is always TLS-terminated by Caddy).
+services:
+  api:
+    build:
+      context: ../server          # adjust to your build context
+      dockerfile: Dockerfile.api
+    image: app-api:local
+    restart: always
+    env_file: ./app.env
+    expose:
+      - "8080"                     # adjust to your API's listen port
+    # Disable a Dockerfile HEALTHCHECK that uses wget/curl if the runtime image
+    # lacks them (otherwise the container shows permanently "unhealthy").
+    # The CI workflow health-checks externally instead.
+    healthcheck:
+      disable: true
+    networks: [app]
+
+  worker:
+    build:
+      context: ../server
+      dockerfile: Dockerfile.worker
+    image: app-worker:local
+    restart: always
+    env_file: ./app.env
+    networks: [app]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data            # persists issued certs across restarts
+      - caddy_config:/config
+    depends_on:
+      - api
+    networks: [app]
+
+networks:
+  app: {}
+
+volumes:
+  caddy_data: {}
+  caddy_config: {}

@@ -1,0 +1,109 @@
+name: Deploy Backend to VPS
+
+# Push-to-deploy lifecycle for a containerized app (API + optional worker) on a VPS.
+# On every push to main touching the app, GitHub Actions: renders the env file from
+# GitHub Secrets (single source of truth, never committed), rsyncs source + deploy
+# assets over SSH (custom port), rebuilds/restarts containers, then health-checks
+# honestly. No manual step on the box.
+#
+# Required GitHub config:
+#   Secrets:   VPS_SSH_KEY (deploy private key) + every app secret referenced below
+#   Variables: VPS_HOST, VPS_USER, VPS_SSH_PORT (optional, defaults 22), FRONTEND_URL
+# Adapt: API_BASE/API_HOST, the env keys (match your framework), build paths, app port.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "server/**"          # adjust to your app source path(s)
+      - "deploy/**"
+      - ".github/workflows/vps-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: vps-deploy
+  cancel-in-progress: false
+
+env:
+  API_BASE: https://your.domain.example
+  API_HOST: your.domain.example
+  SSH_PORT: ${{ vars.VPS_SSH_PORT || '22' }}
+  REMOTE_DIR: /home/${{ vars.VPS_USER }}/app
+
+jobs:
+  deploy:
+    name: Build & Deploy on VM
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "${SSH_PORT}" -H "${{ vars.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      # Render the app's REAL config keys (examples below mix flat + .NET-style; use
+      # whatever your framework reads). env_file in compose passes these literally,
+      # avoiding compose ${VAR} substitution mangling secrets that contain '$'.
+      - name: Render app.env from secrets
+        run: |
+          cat > deploy/app.env <<EOF
+          DATABASE_URL=${{ secrets.DB_CONNECTION_STRING }}
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          OAUTH_REDIRECT_URI=${API_BASE}/api/auth/callback
+          FRONTEND_URL=${{ vars.FRONTEND_URL }}
+          CORS_ALLOWED_ORIGIN=${{ vars.FRONTEND_URL }}
+          ALLOWED_HOST=${API_HOST}
+          # ...add the rest your app needs...
+          EOF
+          echo "rendered $(wc -l < deploy/app.env) keys"
+
+      - name: Ensure rsync on VM
+        run: |
+          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" \
+            "command -v rsync >/dev/null || (sudo apt-get update -qq && sudo apt-get install -y -qq rsync)"
+
+      - name: Sync source + deploy assets to VM
+        run: |
+          rsync -az --delete --exclude '.git' --exclude 'node_modules' --exclude 'bin' --exclude 'obj' \
+            -e "ssh -p ${SSH_PORT} -i ~/.ssh/id_ed25519" \
+            server deploy \
+            "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}:${REMOTE_DIR}/"
+          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" \
+            "chmod 600 ${REMOTE_DIR}/deploy/app.env"
+
+      - name: Build & restart containers
+        run: |
+          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" \
+            "cd ${REMOTE_DIR}/deploy && docker compose up -d --build --remove-orphans && docker image prune -f"
+
+      # Honest health check: external liveness probe via a throwaway curl container on
+      # the compose network (slim images lack curl), carrying the real Host header
+      # (host allowlists reject others with 400), anchored match (so 'Unhealthy' does
+      # not false-match), retried across the background-job startup window. Then a
+      # readiness check that fails if the DB is unreachable.
+      - name: Health check
+        run: |
+          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" bash -s <<'EOF'
+          cd ~/app/deploy
+          NET=$(docker network ls --format '{{.Name}}' | grep -E 'app|deploy' | head -1)
+          ok=
+          for i in $(seq 1 25); do
+            if docker run --rm --network "$NET" curlimages/curl:8.11.1 \
+                 -sf --max-time 5 -H "Host: your.domain.example" \
+                 http://app:8080/health 2>/dev/null | grep -qi '^healthy'; then
+              echo "liveness OK"; ok=1; break
+            fi
+            echo "waiting for app... ($i)"; sleep 6
+          done
+          [ -n "$ok" ] || { echo "app never came up"; docker compose ps; docker compose logs --tail=60 app; exit 1; }
+          if docker compose logs --tail=120 app 2>&1 | grep -qiE "ConnectionString.*not been initialized|authentication failed|could not connect|ECONNREFUSED"; then
+            echo "FAIL: app up but DB unreachable (check secrets)"; exit 1
+          fi
+          echo "deploy healthy"
+          EOF
