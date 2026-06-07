@@ -1,5 +1,5 @@
 ---
-name: deploy-to-vps
+name: vps-deploy
 description: >-
   Stand up an automated GitHub Actions CI/CD pipeline that deploys a containerized
   web app (any runtime: Node.js, Python, Go, .NET, Rust...) to a VPS on every push,

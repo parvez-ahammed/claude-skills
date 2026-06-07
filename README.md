@@ -20,8 +20,8 @@ forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
 
 | Skill | What it does | Scope |
 |-------|--------------|-------|
-| **deploy-to-vps** | Vendor-neutral push-to-deploy CI/CD to a VPS (any runtime: Node/Python/Go/.NET), Caddy auto-TLS, OAuth/OIDC redirect setup, DNS (proxied-by-default), and baseline hardening (fail2ban, SSH-port rotation, firewall, CDN origin lockdown). | generic |
-| **honest-health-check** | Design health endpoints that assert real readiness (DB/deps reachable) instead of a hardcoded 200, and wire them into deploy gates + container/orchestrator probes. Pairs with `deploy-to-vps`. | generic |
+| **vps-deploy** | Vendor-neutral push-to-deploy CI/CD to a VPS (any runtime: Node/Python/Go/.NET), Caddy auto-TLS, OAuth/OIDC redirect setup, DNS (proxied-by-default), and baseline hardening (fail2ban, SSH-port rotation, firewall, CDN origin lockdown). | generic |
+| **honest-health-check** | Design health endpoints that assert real readiness (DB/deps reachable) instead of a hardcoded 200, and wire them into deploy gates + container/orchestrator probes. Pairs with `vps-deploy`. | generic |
 | **clean-architecture** | Rulebook + bootstrap + config-driven guard for Clean / Hexagonal architecture in any language (.NET/TS/Java/Go/Python). The Dependency Rule, ports & adapters, per-stack layout, and a layering check to enforce boundaries. | generic |
 
 ## Hooks (`hooks/`)
@@ -35,32 +35,55 @@ forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
 
 User-fired prompt shortcuts. None yet - coming as patterns stabilize.
 
+## Install (any machine)
+
+This repo is a **Claude Code plugin marketplace**. The skills ship as one plugin,
+`parvez`, so on any machine:
+
+```
+/plugin marketplace add parvez-ahammed/claude-skills
+/plugin install parvez@parvez-tools
+```
+
+Every skill goes live, namespaced `parvez:<skill>` (e.g. `parvez:vps-deploy`,
+`parvez:clean-architecture`, `parvez:honest-health-check`), triggering on its
+`description`. Update later with `/plugin marketplace update parvez-tools`.
+
+Local authoring loop (test before pushing): `/plugin marketplace add .` from a clone,
+then install — relative paths resolve against the repo.
+
 ## Layout
 
 ```
 claude-skills/
-  README.md        - this file
-  LICENSE          - MIT
-  INDEX.md         - catalog
-  sync-skills.ps1  - copy skills/* into ~/.claude/skills so they go live
-  _template/       - starting point for a new skill
-  skills/          - skills (one folder each)
-  hooks/           - hooks (script + install notes per hook)
-  commands/        - user-fired commands
+  README.md                  - this file
+  LICENSE                    - MIT
+  INDEX.md                   - catalog
+  .claude-plugin/
+    marketplace.json         - marketplace manifest (name: parvez-tools)
+  plugins/
+    parvez/                  - the installable plugin (namespace prefix)
+      .claude-plugin/plugin.json
+      skills/                - skills (one folder each)
+  _template/                 - starting point for a new skill
+  hooks/                     - git hooks (script + install notes per hook)
+  commands/                  - user-fired commands
+  sync-skills.ps1            - legacy: copy skills into ~/.claude/skills (dev only)
 ```
 
 ## Use
 
-**Skills** - sync into Claude Code's personal skills dir:
-```powershell
-pwsh -File sync-skills.ps1   # copies skills/* into ~/.claude/skills
-```
-Then they show up in a Claude Code session and trigger on their `description`.
+**Skills** - install via the plugin (above). They trigger on their `description`. To
+add a skill: drop a new folder under `plugins/parvez/skills/`, commit, push; installed
+users pick it up on `/plugin marketplace update`.
 
-**Hooks** - install per-hook (a git hook, or a settings.json snippet). See each hook's
+**Hooks** - these are **git** hooks (commit-msg / pre-commit), not Claude lifecycle
+hooks, so install per-hook (a git hook, or a settings.json snippet). See each hook's
 `README.md`. The `update-config` skill can wire Claude Code hooks into settings.json.
 
-This repo is the **source of truth**; `~/.claude/skills/` is a synced copy.
+`sync-skills.ps1` is the **legacy** path (copies into `~/.claude/skills` on this box
+only) - kept for fast local iteration; the plugin marketplace is how it goes
+cross-machine now.
 
 ## Writing a good skill
 

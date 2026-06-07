@@ -9,7 +9,7 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-$src = Join-Path $PSScriptRoot "skills"
+$src = Join-Path $PSScriptRoot "plugins\parvez\skills"
 
 if (-not (Test-Path $src)) { throw "No skills/ directory found at $src" }
 New-Item -ItemType Directory -Force -Path $Dest | Out-Null

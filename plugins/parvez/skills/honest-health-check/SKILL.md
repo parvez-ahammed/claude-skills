@@ -83,4 +83,4 @@ few seconds if probes are frequent.
 Most frameworks have a health-checks library; prefer it over hand-rolling. See
 `references/readiness-by-framework.md` for ready/live endpoint snippets in Node,
 Python, Go, and .NET, plus the matching deploy-probe and HEALTHCHECK wiring. Pairs
-directly with the `deploy-to-vps` skill's health-check step.
+directly with the `vps-deploy` skill's health-check step.

@@ -1,0 +1,15 @@
+{
+  "name": "parvez-tools",
+  "owner": {
+    "name": "Parvez Ahammed",
+    "email": "nordic.dev.bd@gmail.com"
+  },
+  "description": "Parvez's personal Claude Code toolkit — skills, hooks, and commands for building and shipping projects.",
+  "plugins": [
+    {
+      "name": "parvez",
+      "source": "./plugins/parvez",
+      "description": "All-in-one toolkit: vps-deploy (push-to-deploy CI/CD + OAuth + DNS/TLS + hardening), honest-health-check (real readiness probes), clean-architecture (rulebook + bootstrap + layering guard)."
+    }
+  ]
+}
