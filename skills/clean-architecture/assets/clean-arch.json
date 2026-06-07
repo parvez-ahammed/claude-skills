@@ -1,0 +1,41 @@
+{
+  "//": "Clean Architecture guard config. Copy to your repo root, edit roots + forbidden. 'roots' are directory paths (scanned recursively). 'forbidden' are regexes tested against import-ish lines in that layer. 'dotnet' (optional) declares the allowed .csproj reference DAG, keyed by a suffix of the project name.",
+  "fileExtensions": [".cs", ".ts", ".tsx", ".java", ".kt", ".go", ".py"],
+  "importLineRegex": "^\\s*(using|import|from|require|#include|use)\\b",
+  "layers": [
+    {
+      "name": "domain",
+      "roots": ["src/Domain", "Domain", "src/domain"],
+      "forbidden": [
+        "EntityFrameworkCore", "Microsoft\\.AspNetCore", "Npgsql", "Hangfire",
+        "express", "fastify", "axios", "@nestjs", "aws-sdk", "stripe",
+        "org\\.springframework", "jakarta\\.persistence",
+        "database/sql", "net/http",
+        "\\.Application", "\\.Infrastructure", "\\.\\./application", "\\.\\./infrastructure"
+      ]
+    },
+    {
+      "name": "application",
+      "roots": ["src/Application", "Application", "src/application"],
+      "forbidden": [
+        "EntityFrameworkCore", "Microsoft\\.AspNetCore", "Npgsql",
+        "express", "fastify", "axios", "@nestjs/platform",
+        "\\.Infrastructure", "\\.\\./infrastructure"
+      ]
+    },
+    {
+      "name": "infrastructure",
+      "roots": ["src/Infrastructure", "Infrastructure", "src/infrastructure"],
+      "forbidden": [
+        "Microsoft\\.AspNetCore\\.Mvc", "\\.Controllers", "\\.\\./presentation", "\\.\\./api"
+      ]
+    }
+  ],
+  "dotnet": {
+    "Domain": [],
+    "Application": ["Domain"],
+    "Infrastructure": ["Domain", "Application"],
+    "API": ["Domain", "Application", "Infrastructure"],
+    "Worker": ["Domain", "Application", "Infrastructure"]
+  }
+}
