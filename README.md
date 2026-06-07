@@ -28,6 +28,7 @@ forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
 | Hook | What it does | Install |
 |------|--------------|---------|
 | **secret-hygiene** | Block a commit that introduces a secret (gitleaks when present, conservative regex fallback). | git pre-commit hook, or a Claude Code PreToolUse hook - see `hooks/secret-hygiene/README.md` |
+| **safe-commit** | commit-msg validator: no stray `@`, conventional subject, length; optional em-dash + AI-coauthor rejection. | git commit-msg hook - see `hooks/safe-commit/README.md` |
 
 ## Commands (`commands/`)
 

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# safe-commit commit-msg hook: validate the commit message before it lands.
+# Defaults enforce: no stray '@'-prefixed line (the bash @'...'@ slip), a conventional
+# subject, and a sane subject length. Optional opinionated checks via env vars.
+#
+# Toggles (set in the repo's environment, e.g. via direnv, or export before committing):
+#   SAFE_COMMIT_NO_CONVENTIONAL=1   disable the conventional-subject requirement
+#   SAFE_COMMIT_NO_EMDASH=1         reject em dashes (—); use '-' or ':' instead
+#   SAFE_COMMIT_NO_AI_COAUTHOR=1    reject "Co-Authored-By: <AI>" trailers
+#
+# Bypass once (use sparingly): git commit --no-verify
+set -euo pipefail
+msg_file="$1"
+
+red()  { printf '\033[31msafe-commit: %s\033[0m\n' "$1"; }
+warn() { printf '\033[33msafe-commit: %s\033[0m\n' "$1"; }
+
+# Subject = first non-blank, non-comment line.
+subject="$(grep -vE '^[[:space:]]*#' "$msg_file" | grep -vE '^[[:space:]]*$' | head -1 || true)"
+errs=0
+
+[ -z "$subject" ] && { red "empty commit subject"; errs=1; }
+
+# 1) stray '@'-prefixed line anywhere (a bash @'...'@ here-string slip leaks literal @)
+if grep -qE '^@' "$msg_file"; then
+  red "a line starts with '@' (likely a bash @'...'@ slip) - rebuild the message with plain -m flags"
+  errs=1
+fi
+
+# 2) conventional subject (unless disabled)
+if [ "${SAFE_COMMIT_NO_CONVENTIONAL:-0}" != "1" ]; then
+  if ! printf '%s' "$subject" | grep -qE '^(feat|fix|chore|docs|refactor|test|perf|build|ci|style|revert)(\([^)]+\))?!?: .+'; then
+    red "subject is not conventional ('type(scope): description'): $subject"
+    errs=1
+  fi
+fi
+
+# 3) subject length (warning only)
+[ "${#subject}" -gt 72 ] && warn "subject is ${#subject} chars (>72); consider shortening"
+
+# 4) optional: reject em dashes
+if [ "${SAFE_COMMIT_NO_EMDASH:-0}" = "1" ] && LC_ALL=C grep -q $'\xe2\x80\x94' "$msg_file"; then
+  red "em dash (—) present; use '-' or ':' (SAFE_COMMIT_NO_EMDASH=1)"
+  errs=1
+fi
+
+# 5) optional: reject AI co-author trailers
+if [ "${SAFE_COMMIT_NO_AI_COAUTHOR:-0}" = "1" ] && grep -qiE '^Co-Authored-By:.*(claude|gpt|copilot|gemini)' "$msg_file"; then
+  red "AI 'Co-Authored-By' trailer present (SAFE_COMMIT_NO_AI_COAUTHOR=1)"
+  errs=1
+fi
+
+if [ "$errs" -ne 0 ]; then
+  echo "Commit rejected. Fix the message, or bypass intentionally with: git commit --no-verify"
+  exit 1
+fi
+exit 0

@@ -12,5 +12,6 @@ Skills currently in this library (`skills/`). Run `sync-skills.ps1` to activate.
 | Hook | What it does |
 |------|--------------|
 | **secret-hygiene** | Pre-commit block on secrets (gitleaks + regex fallback). git pre-commit hook or Claude Code PreToolUse hook. |
+| **safe-commit** | commit-msg validator: no stray `@`, conventional subject, length; optional em-dash + AI-coauthor rejection. |
 
 More skills/hooks are in progress and will land here as they're generalized for public use.
