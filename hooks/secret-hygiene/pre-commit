@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+# secret-hygiene pre-commit hook: block a commit that introduces a secret.
+# Prefers gitleaks (accurate); falls back to a conservative regex scan if gitleaks
+# isn't installed. Respects .gitleaksignore for accepted historical findings.
+#
+# Install: copy/symlink into a repo's .git/hooks/pre-commit (see install.ps1), or wire
+# it as a Claude Code PreToolUse hook (see claude-settings-snippet.json).
+set -euo pipefail
+
+red() { printf '\033[31m%s\033[0m\n' "$*"; }
+grn() { printf '\033[32m%s\033[0m\n' "$*"; }
+
+# 1) Preferred: gitleaks on the staged change set.
+if command -v gitleaks >/dev/null 2>&1; then
+  if gitleaks protect --staged --redact --no-banner; then
+    grn "secret-hygiene: gitleaks clean."
+    exit 0
+  else
+    red "secret-hygiene: gitleaks found a secret in staged changes. Commit blocked."
+    red "Remove it (or add an accepted historical finding to .gitleaksignore), then re-commit."
+    exit 1
+  fi
+fi
+
+# 2) Fallback: conservative regex scan of staged ADDITIONS only (ERE, case-insensitive).
+echo "secret-hygiene: gitleaks not found, using regex fallback (install gitleaks for better coverage)."
+added="$(git diff --cached --no-color -U0 | grep -E '^\+' | grep -Ev '^\+\+\+' || true)"
+[ -z "$added" ] && { grn "secret-hygiene: no additions to scan."; exit 0; }
+
+# High-signal ERE patterns (single-quoted, no leading '-', no PCRE). -e handles each
+# safely. The generic rule requires a long no-space value after secret/token/key=...
+patterns=(
+  'AKIA[0-9A-Z]{16}'
+  'AIza[0-9A-Za-z_-]{35}'
+  'gh[posru]_[0-9A-Za-z]{36,}'
+  'github_pat_[0-9A-Za-z_]{22,}'
+  'xox[baprs]-[0-9A-Za-z-]{10,}'
+  'sk-[A-Za-z0-9]{20,}'
+  'BEGIN [A-Z ]*PRIVATE KEY'
+  '(secret|token|password|passwd|api[_-]?key)[[:space:]]*[:=][[:space:]]*[^[:space:]]{16,}'
+)
+
+hit=0
+for p in "${patterns[@]}"; do
+  if printf '%s\n' "$added" | grep -E -i -e "$p" >/dev/null 2>&1; then
+    red "secret-hygiene: possible secret matching /$p/ in staged changes."
+    hit=1
+  fi
+done
+
+if [ "$hit" -ne 0 ]; then
+  red "Commit blocked. If it's a false positive, refine the value or bypass intentionally with: git commit --no-verify"
+  exit 1
+fi
+grn "secret-hygiene: regex scan clean."
+exit 0

@@ -1,23 +1,37 @@
 # claude-skills
 
-> ⚠️ **Work in progress.** This is an evolving, personal collection of
-> [Claude Code](https://claude.com/claude-code) skills. Skills here are added and
-> refined over time; some are battle-tested, some are early. Expect churn. Open-sourced
-> so others can reuse the patterns - use at your own discretion and adapt to your stack.
+> ⚠️ **Work in progress.** An evolving, open-sourced toolkit of
+> [Claude Code](https://claude.com/claude-code) building blocks - **skills**, **hooks**,
+> and **commands**. Some are battle-tested, some are early. Expect churn. Reuse the
+> patterns at your own discretion and adapt to your stack.
 
-A library of reusable, version-controlled **skills** (codified workflows) for Claude
-Code. A skill is a folder with a `SKILL.md` (YAML frontmatter + instructions) and
-optional `scripts/`, `references/`, and `assets/`. Claude always sees a skill's name +
-description and pulls the body + bundled files in only when the skill triggers
-(progressive disclosure), so a large skill costs almost nothing until it's used.
+Not just skills - a toolkit, because the right Claude Code primitive depends on the job:
 
-## Skills
+| Primitive | Use it for | Triggered by |
+|-----------|-----------|--------------|
+| **Skill** | knowledge / a workflow the model *applies with judgment* ("how to do X") | the model, on a matching task |
+| **Hook** | deterministic **must-run-on-event** enforcement ("always do X when Y") | the harness, automatically |
+| **Command** | a saved prompt the **user** fires | `/name` |
+
+Rule of thumb: "*always do X when Y happens*" is a **hook**, not a skill - the model
+forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
+
+## Skills (`skills/`)
 
 | Skill | What it does | Scope |
 |-------|--------------|-------|
 | **deploy-to-vps** | Vendor-neutral push-to-deploy CI/CD to a VPS (any runtime: Node/Python/Go/.NET), Caddy auto-TLS, OAuth/OIDC redirect setup, DNS (proxied-by-default), and baseline hardening (fail2ban, SSH-port rotation, firewall, CDN origin lockdown). | generic |
+| **honest-health-check** | Design health endpoints that assert real readiness (DB/deps reachable) instead of a hardcoded 200, and wire them into deploy gates + container/orchestrator probes. Pairs with `deploy-to-vps`. | generic |
 
-More skills are in progress and will be added as they're generalized for public use.
+## Hooks (`hooks/`)
+
+| Hook | What it does | Install |
+|------|--------------|---------|
+| **secret-hygiene** | Block a commit that introduces a secret (gitleaks when present, conservative regex fallback). | git pre-commit hook, or a Claude Code PreToolUse hook - see `hooks/secret-hygiene/README.md` |
+
+## Commands (`commands/`)
+
+User-fired prompt shortcuts. None yet - coming as patterns stabilize.
 
 ## Layout
 
@@ -28,37 +42,38 @@ claude-skills/
   INDEX.md         - catalog
   sync-skills.ps1  - copy skills/* into ~/.claude/skills so they go live
   _template/       - starting point for a new skill
-  skills/          - the skills (one folder each)
+  skills/          - skills (one folder each)
+  hooks/           - hooks (script + install notes per hook)
+  commands/        - user-fired commands
 ```
 
 ## Use
 
-1. **Author / edit** under `skills/<name>/` (copy `_template/` to start, or use the
-   `skill-creator` skill).
-2. **Activate** by syncing into Claude Code's personal skills dir:
-   ```powershell
-   pwsh -File sync-skills.ps1
-   ```
-   Copies every `skills/*` into `~/.claude/skills/` (Windows:
-   `C:\Users\<you>\.claude\skills\`), which Claude Code auto-discovers.
-3. **Verify** in a Claude Code session - the skill shows in the available-skills list
-   and triggers on phrases matching its `description`.
+**Skills** - sync into Claude Code's personal skills dir:
+```powershell
+pwsh -File sync-skills.ps1   # copies skills/* into ~/.claude/skills
+```
+Then they show up in a Claude Code session and trigger on their `description`.
 
-This repo is the **source of truth**; `~/.claude/skills/` is a synced copy. Edit here,
-sync, commit, push.
+**Hooks** - install per-hook (a git hook, or a settings.json snippet). See each hook's
+`README.md`. The `update-config` skill can wire Claude Code hooks into settings.json.
+
+This repo is the **source of truth**; `~/.claude/skills/` is a synced copy.
 
 ## Writing a good skill
 
-- **Pushy, specific `description`** - it's the only trigger signal; name the contexts
-  and phrases it should fire on.
+- **Pushy, specific `description`** - the only trigger signal; name the contexts and
+  phrases it should fire on.
 - Keep `SKILL.md` lean; push detail into `references/` (loaded on demand).
-- Bundle deterministic steps as `scripts/` so they aren't re-derived each run.
+- Bundle deterministic steps as `scripts/`.
 - Explain the **why**; avoid rigid ALWAYS/NEVER walls.
+- If it's really "enforce X every time," make it a **hook**, not a skill.
 
 ## Contributing
 
-Early days - issues and PRs welcome once it stabilizes. Skills should be self-contained,
-documented, and (where they have a verifiable output) shipped with a working script.
+Early days - issues and PRs welcome once it stabilizes. Each piece should be
+self-contained, documented, and (where it has a verifiable output) shipped with a
+tested script.
 
 ## License
 
