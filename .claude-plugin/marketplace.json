@@ -9,7 +9,7 @@
     {
       "name": "parvez",
       "source": "./plugins/parvez",
-      "description": "All-in-one toolkit: vps-deploy (push-to-deploy CI/CD + OAuth + DNS/TLS + hardening), honest-health-check (real readiness probes), clean-architecture (rulebook + bootstrap + layering guard)."
+      "description": "All-in-one toolkit. Ship: vps-deploy (push-to-deploy CI/CD + OAuth + DNS/TLS + hardening), honest-health-check (real readiness probes), clean-architecture (rulebook + bootstrap + layering guard). Refactor: refactoring-guru orchestrator + code-smell-detector, refactoring-methods, and creational/structural/behavioral pattern scorers. Review: platform-audit (DRY across a backlog), grill-feature (promise-level code interrogation). Plus show-usage (local time/token/cost stats)."
     }
   ]
 }

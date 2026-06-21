@@ -37,6 +37,15 @@ forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
 | **vps-deploy** | Vendor-neutral push-to-deploy CI/CD to a VPS (any runtime: Node/Python/Go/.NET), Caddy auto-TLS, OAuth/OIDC redirect setup, DNS (proxied-by-default), and baseline hardening (fail2ban, SSH-port rotation, firewall, CDN origin lockdown). | generic |
 | **honest-health-check** | Design health endpoints that assert real readiness (DB/deps reachable) instead of a hardcoded 200, and wire them into deploy gates + container/orchestrator probes. Pairs with `vps-deploy`. | generic |
 | **clean-architecture** | Rulebook + bootstrap + config-driven guard for Clean / Hexagonal architecture in any language (.NET/TS/Java/Go/Python). The Dependency Rule, ports & adapters, per-stack layout, and a layering check to enforce boundaries. | generic |
+| **refactoring-guru** | Orchestrator for refactoring + design-pattern work. Understands intent, routes to the spokes below, and only recommends a pattern when a code site meets scored preconditions with cited evidence. | generic |
+| **code-smell-detector** | Detect the 22 refactoring.guru smells (Bloaters, OO-abusers, Change-preventers, Dispensables, Couplers) in a file/dir, each with `file:line` evidence mapped to a candidate fix. Spoke of refactoring-guru. | generic |
+| **refactoring-methods** | Martin Fowler's refactoring catalog: preconditions + ordered, safe mechanics to fix a known smell (extract method, replace conditional with polymorphism, introduce parameter object...). Spoke. | generic |
+| **creational-patterns** | Score whether a creational GoF pattern (Factory, Abstract Factory, Builder, Prototype, Singleton) fits a site; weighted preconditions + hard vetoes, emits APPLY/CONSIDER/REJECT with evidence. Spoke. | generic |
+| **structural-patterns** | Same scoring for structural patterns (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy). Spoke. | generic |
+| **behavioral-patterns** | Same scoring for behavioral patterns (Strategy, State, Command, Observer, Chain of Responsibility, Template Method, Visitor, Mediator, Iterator, Memento). Spoke. | generic |
+| **platform-audit** | Find what to make shared across a milestone/backlog with DRY/KISS/YAGNI judgment: candidate commons, a verdict each (build-now / narrow / resist), a cross-phase ownership check, and a build order. Resists over-abstraction. | generic |
+| **grill-feature** | Promise-level, code-grounded interrogation of shipped features (does the real promise hold in the code, not "does it compile") returning BULLETPROOF / CRACKED / FAKE with `file:line` evidence, plus an optional unit-economics pass. Inline or workflow sweep. | generic |
+| **show-usage** | WakaTime-style local active time + token/cost/tool stats from Claude Code session transcripts. Read-only, zero-dep. | generic |
 
 ### Hooks (`hooks/`)
 

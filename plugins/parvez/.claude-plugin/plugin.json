@@ -1,7 +1,7 @@
 {
   "name": "parvez",
-  "description": "Parvez's Claude Code toolkit: battle-tested skills for shipping projects — push-to-deploy VPS CI/CD, honest health checks, and clean/hexagonal architecture with an enforced layering guard.",
-  "version": "0.1.0",
+  "description": "Parvez's Claude Code toolkit: skills for shipping (push-to-deploy VPS CI/CD, honest health checks, clean/hexagonal architecture with an enforced layering guard), refactoring (refactoring-guru orchestrator + smell detector, Fowler methods, GoF pattern scorers), review (platform-audit, grill-feature), and local usage stats (show-usage).",
+  "version": "0.2.0",
   "author": {
     "name": "Parvez Ahammed",
     "email": "nordic.dev.bd@gmail.com"
@@ -17,6 +17,10 @@
     "oauth",
     "health-check",
     "clean-architecture",
-    "hexagonal"
+    "hexagonal",
+    "refactoring",
+    "design-patterns",
+    "code-smells",
+    "code-review"
   ]
 }
