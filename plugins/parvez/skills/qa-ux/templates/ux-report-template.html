@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{PRODUCT}} — Product Experience Audit</title>
+<!-- qa-ux UX skeleton. Fill {{TOKENS}}. Mark UNKNOWN where not observed.
+     Screenshots relative: screenshots/<name>.png. Sections: score · top10 · unfinished · trust ·
+     abandon · quick wins · medium · big redesigns · competitors · release rec · per-journey · evidence. -->
+<style>
+ :root{--bg:#0b0e13;--panel:#10141b;--panel2:#151a23;--line:#222b39;--ink:#e9eef6;--ink2:#cdd7e6;--muted:#90a0b6;
+ --brand:#a78bfa;--ok:#3ad29f;--fail:#ff6b6b;--warn:#ffb84d;--info:#5aa9ff;
+ --crit:#ff5470;--high:#ff8a5b;--med:#ffc24b;--low:#5aa9ff;--nfo:#7b8aa0;}
+ *{box-sizing:border-box}html{scroll-behavior:smooth}
+ body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Arial}
+ a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+ .wrap{display:flex;max-width:1520px;margin:0 auto}
+ nav{position:sticky;top:0;height:100vh;overflow:auto;width:258px;padding:22px 14px;border-right:1px solid var(--line);background:var(--panel)}
+ nav a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink2);font-size:13.5px}nav a:hover{background:var(--panel2)}
+ nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);margin:16px 0 6px;padding-left:8px}
+ main{flex:1;min-width:0;padding:34px 48px 80px}
+ h1{font-size:30px;margin:0 0 4px;letter-spacing:-.02em}h2.sec{font-size:22px;margin:50px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+ .score{font-size:58px;font-weight:800;letter-spacing:-.02em}
+ .grid{display:grid;gap:14px;margin:18px 0}.g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+ @media(max-width:980px){.g2,.g3{grid-template-columns:1fr}nav{display:none}}
+ .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+ .pill{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11.5px;font-weight:700}
+ .sev{display:inline-block;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:800;text-transform:uppercase}
+ .s-crit{background:rgba(255,84,112,.18);color:var(--crit)}.s-high{background:rgba(255,138,91,.18);color:var(--high)}
+ .s-med{background:rgba(255,194,75,.16);color:var(--med)}.s-low{background:rgba(90,169,255,.16);color:var(--low)}.s-nfo{background:rgba(123,138,160,.18);color:var(--nfo)}
+ .lens{display:inline-block;padding:1px 8px;border-radius:6px;font-size:11px;background:rgba(167,139,250,.16);color:var(--brand);margin-right:4px}
+ table{width:100%;border-collapse:collapse;margin:14px 0;font-size:13.6px}th,td{text-align:left;padding:9px 11px;border-bottom:1px solid var(--line);vertical-align:top}
+ th{color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em}
+ details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:12px 0;padding:2px 16px}
+ summary{cursor:pointer;font-weight:600;padding:12px 0}
+ .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:10px 0;background:var(--panel2)}.shot img{display:block;width:100%;background:#fff}
+ .shot .cap{padding:9px 13px;color:var(--muted);font-size:12.3px;border-top:1px solid var(--line)}
+ .shots3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}@media(max-width:980px){.shots3{grid-template-columns:1fr}}
+ .issue{border-left:4px solid var(--line);background:var(--panel);border-radius:0 12px 12px 0;padding:14px 18px;margin:12px 0}
+ .issue.crit{border-left-color:var(--crit)}.issue.high{border-left-color:var(--high)}.issue.med{border-left-color:var(--med)}.issue.low{border-left-color:var(--low)}
+ .kv{display:grid;grid-template-columns:140px 1fr;gap:4px 14px;font-size:13.8px;margin:8px 0}.kv .k{color:var(--muted)}
+</style></head>
+<body><div class="wrap">
+<nav>
+ <div style="font-weight:800;color:var(--brand)">{{PRODUCT}} · Experience</div>
+ <div class="grp">Verdict</div><a href="#score">Product Experience Score</a><a href="#top10">Top 10 problems</a><a href="#rec">Release recommendation</a>
+ <div class="grp">Diagnosis</div><a href="#unfinished">Feels unfinished</a><a href="#trust">Reduces trust</a><a href="#abandon">Users would abandon</a>
+ <div class="grp">Fixes</div><a href="#quick">Quick wins</a><a href="#medium">Medium</a><a href="#big">Big redesigns</a><a href="#competitors">Vs competitors</a>
+ <div class="grp">Walkthrough</div><a href="#journeys">Journeys A–F</a><a href="#evidence">Evidence</a>
+</nav>
+<main>
+ <h1>{{PRODUCT}} — Product Experience Audit</h1>
+ <p style="color:var(--muted)">Six lenses · six journeys · {{DATE}} · {{BRANCH}}@{{SHA}}</p>
+ <h2 class="sec" id="score">Product Experience Score</h2>
+ <div class="card"><div class="score">{{SCORE}}<span style="font-size:22px;color:var(--muted)">/100</span></div><p>{{SCORE_RUBRIC}}</p></div>
+ <h2 class="sec" id="top10">Top 10 UX problems</h2>
+ <h2 class="sec" id="rec">Release recommendation</h2>
+ <h2 class="sec" id="unfinished">Screens that feel unfinished</h2>
+ <h2 class="sec" id="trust">Screens that reduce trust</h2>
+ <h2 class="sec" id="abandon">Screens users would abandon</h2>
+ <h2 class="sec" id="quick">Quick wins (&lt;30 min)</h2>
+ <h2 class="sec" id="medium">Medium improvements</h2>
+ <h2 class="sec" id="big">Big redesign opportunities</h2>
+ <h2 class="sec" id="competitors">What makes competitors feel better</h2>
+ <h2 class="sec" id="journeys">Journeys A–F</h2>
+ <h2 class="sec" id="evidence">Evidence dashboard</h2>
+</main></div></body></html>
