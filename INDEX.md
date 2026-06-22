@@ -17,6 +17,7 @@ Skills currently in this library (`plugins/parvez/skills/`). Install via the plu
 | **platform-audit** | Across a milestone/backlog of issues, finds the shared engines/primitives/UI worth extracting with DRY/KISS/YAGNI judgment: cross-phase ownership table, per-candidate verdict (build-now/narrow/resist), a mandatory "what to resist" list, and a dependency-ordered build order. | generic |
 | **grill-feature** | Stands up a "grill room" of independent, code-grounded interrogators that test features at the PROMISE level and return BULLETPROOF/CRACKED/FAKE with `file:line` evidence, plus an optional CEO unit-economics pass. One feature inline, or a whole release as a background workflow sweep. | generic |
 | **show-usage** | WakaTime-style active time + token/cost/tool tables computed locally from Claude Code session transcripts. Read-only, zero-dep `node` script; per-project or all-projects. | generic |
+| **qa-ux** | Pressure-test a running web app and emit TWO cross-linked HTML reports by default: a Staff-QA release report (14 sections, 🟢/🟡/🔴 recommendation, Playwright + API/ffprobe evidence) and a UX product-experience audit (6 personas x 6 journeys, Product Experience Score /100, ranked redesigns). Drives the browser for screenshot proof incl. mobile; never invents data (UNKNOWN when unverified). Scope to one report only if asked. | generic |
 
 ## Hooks (`hooks/`)
 

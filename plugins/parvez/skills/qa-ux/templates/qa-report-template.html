@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{PRODUCT}} — QA Execution Report</title>
+<!--
+  parvez-qa report skeleton. Fill every {{TOKEN}}. Mark UNKNOWN where not verified.
+  Reference screenshots as screenshots/<name>.png (relative to this file).
+  Sections: 1 Cover · 2 Release rec · 3 Exec summary · 4 Scope · 5 Traceability ·
+  6 Scenario execution · 7 Defect tickets · 8 Evidence dashboard · 9 API · 10 Coverage ·
+  11 Risk register · 12 Readiness checklist · 13 Action items · 14 Appendix.
+-->
+<style>
+  :root{
+    --bg:#0c0f14;--panel:#11151c;--panel2:#161b24;--line:#222a36;--ink:#e7ecf3;--muted:#94a2b6;
+    --brand:#6e8bff;--ok:#3ad29f;--fail:#ff6b6b;--warn:#ffb84d;--info:#5aa9ff;--grey:#7b8aa0;
+  }
+  *{box-sizing:border-box}html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial}
+  a{color:var(--brand);text-decoration:none}a:hover{text-decoration:underline}
+  .wrap{display:flex;max-width:1480px;margin:0 auto}
+  nav{position:sticky;top:0;height:100vh;overflow:auto;width:250px;padding:22px 14px;border-right:1px solid var(--line);background:var(--panel)}
+  nav a{display:block;padding:6px 10px;border-radius:8px;color:var(--ink);font-size:13.5px}
+  nav a:hover{background:var(--panel2)}
+  nav .grp{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:16px 0 6px}
+  main{flex:1;min-width:0;padding:34px 46px}
+  h1{font-size:30px;margin:0 0 6px;letter-spacing:-.02em}
+  h2.sec{font-size:22px;margin:46px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+  .muted{color:var(--muted)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin:18px 0}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+  .kpi .n{font-size:28px;font-weight:800}.kpi .l{color:var(--muted);font-size:12.5px}
+  .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:700}
+  .pass{background:rgba(58,210,159,.15);color:var(--ok)}.fail{background:rgba(255,107,107,.15);color:var(--fail)}
+  .warn{background:rgba(255,184,77,.16);color:var(--warn)}.info{background:rgba(90,169,255,.16);color:var(--info)}
+  .blk{background:rgba(123,138,160,.2);color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+  code{background:#0a0d12;border:1px solid var(--line);border-radius:6px;padding:1px 6px;font:12.5px ui-monospace,Menlo,monospace;color:#bcd3ff}
+  details{background:var(--panel);border:1px solid var(--line);border-radius:12px;margin:12px 0;padding:6px 16px}
+  summary{cursor:pointer;font-weight:600;padding:8px 0}
+  .callout{border-left:4px solid var(--brand);background:var(--panel);border-radius:0 12px 12px 0;padding:14px 18px;margin:14px 0}
+  .callout.bad{border-left-color:var(--fail)}.callout.warn{border-left-color:var(--warn)}.callout.ok{border-left-color:var(--ok)}
+  .decision{border-radius:16px;padding:22px 26px;margin:18px 0;font-size:18px;font-weight:700}
+  .decision.green{background:rgba(58,210,159,.12);border:1px solid var(--ok)}
+  .decision.amber{background:rgba(255,184,77,.12);border:1px solid var(--warn)}
+  .decision.red{background:rgba(255,107,107,.12);border:1px solid var(--fail)}
+  .shot{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:12px 0;background:var(--panel2)}
+  .shot img{display:block;width:100%}.shot .cap{padding:9px 13px;color:var(--muted);font-size:12.5px;border-top:1px solid var(--line)}
+  .shots2{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:900px){.shots2{grid-template-columns:1fr}nav{display:none}}
+  .bar{height:10px;border-radius:6px;background:var(--panel2);overflow:hidden}.bar>i{display:block;height:100%}
+  .tl{list-style:none;padding-left:18px;border-left:2px solid var(--line)}
+  .tl li{position:relative;margin:10px 0;padding-left:14px}
+  .tl li::before{content:"";position:absolute;left:-25px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--brand)}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+  <div style="font-weight:800;color:var(--brand)">{{PRODUCT}} QA</div>
+  <div class="muted" style="font-size:12px">Cycle {{CYCLE}} · {{DATE}}</div>
+  <div class="grp">Decision</div>
+  <a href="#cover">1 · Cover</a><a href="#rec">2 · Release recommendation</a><a href="#summary">3 · Executive summary</a>
+  <div class="grp">Plan</div>
+  <a href="#scope">4 · Scope</a><a href="#trace">5 · Traceability</a>
+  <div class="grp">Execution</div>
+  <a href="#scenarios">6 · Scenario execution</a><a href="#defects">7 · Defect reports</a><a href="#evidence">8 · Evidence</a><a href="#api">9 · API verification</a>
+  <div class="grp">Readiness</div>
+  <a href="#coverage">10 · Coverage</a><a href="#risks">11 · Risk register</a><a href="#checklist">12 · Readiness checklist</a><a href="#actions">13 · Action items</a><a href="#appendix">14 · Appendix</a>
+</nav>
+<main>
+  <!-- 1 COVER -->
+  <section id="cover">
+    <h1>{{PRODUCT}} — QA Execution Report</h1>
+    <p class="muted">{{REPORT_TITLE}}</p>
+    <div class="grid">
+      <div class="card kpi"><div class="l">Test cycle</div><div class="n">{{CYCLE}}</div></div>
+      <div class="card kpi"><div class="l">Branch / commit</div><div class="n" style="font-size:15px">{{BRANCH}} · {{SHA}}</div></div>
+      <div class="card kpi"><div class="l">Environment</div><div class="n" style="font-size:15px">{{ENV}}</div></div>
+      <div class="card kpi"><div class="l">Execution date</div><div class="n" style="font-size:15px">{{DATE}}</div></div>
+      <div class="card kpi"><div class="l">Tester</div><div class="n" style="font-size:15px">{{TESTER}}</div></div>
+      <div class="card kpi"><div class="l">Build / RC</div><div class="n" style="font-size:15px">{{BUILD}} · {{RC}}</div></div>
+    </div>
+  </section>
+  <!-- 2 RELEASE RECOMMENDATION -->
+  <h2 class="sec" id="rec">2 · Release recommendation</h2>
+  <div class="decision {{DECISION_CLASS}}">{{DECISION_EMOJI}} {{DECISION}}</div>
+  <p>{{DECISION_REASONING}}</p>
+  <!-- blocking issues / required fixes lists -->
+  <!-- 3..14: fill each section using the structures in SKILL.md. Keep Scenario/Expected/Actual everywhere. -->
+  <h2 class="sec" id="summary">3 · Executive summary</h2>
+  <h2 class="sec" id="scope">4 · Test scope</h2>
+  <h2 class="sec" id="trace">5 · Traceability matrix</h2>
+  <h2 class="sec" id="scenarios">6 · Scenario-based execution</h2>
+  <h2 class="sec" id="defects">7 · Defect reports</h2>
+  <h2 class="sec" id="evidence">8 · Evidence dashboard</h2>
+  <h2 class="sec" id="api">9 · API verification</h2>
+  <h2 class="sec" id="coverage">10 · Coverage report</h2>
+  <h2 class="sec" id="risks">11 · Risk register</h2>
+  <h2 class="sec" id="checklist">12 · Release readiness checklist</h2>
+  <h2 class="sec" id="actions">13 · Action items</h2>
+  <h2 class="sec" id="appendix">14 · Appendix</h2>
+</main>
+</div>
+</body>
+</html>
