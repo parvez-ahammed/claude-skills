@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <!-- Match the client's target framework. Vendor controls can fail on a newer runtime. -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <!-- The client's build output folder. Override on the command line with -p:ClientBin=C:\path\to\bin -->
+    <ClientBin Condition="'$(ClientBin)' == ''">..\..\..\YourClient\bin\Debug\net8.0-windows</ClientBin>
+  </PropertyGroup>
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>ClientBin</_Parameter1>
+      <_Parameter2>$([System.IO.Path]::GetFullPath($([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(ClientBin)'))))</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+  <!-- Add one Reference per client or vendor DLL whose types you construct in Screens.cs, for example:
+  <ItemGroup>
+    <Reference Include="YourClient"><HintPath>$(ClientBin)\YourClient.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="DevExpress.XtraEditors.v24.2"><HintPath>$(ClientBin)\DevExpress.XtraEditors.v24.2.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+  -->
+</Project>

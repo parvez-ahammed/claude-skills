@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recurring tasks - Feature guide</title>
+<style>
+  :root {
+    --ink: #15202e;
+    --ink-2: #45566c;
+    --ink-3: #74819a;
+    --paper: #f2f5f9;
+    --surface: #ffffff;
+    --surface-2: #f8fafc;
+    --line: #e4e9f0;
+    --line-strong: #ccd5e1;
+
+    --teal: #0f766e;
+    --teal-700: #115e57;
+    --teal-soft: #e6f2f0;
+    --teal-line: #bce0da;
+
+    --blue: #2a5a86;
+    --blue-soft: #e9f1f8;
+
+    --amber: #a65a08;
+    --amber-soft: #fbefdb;
+    --amber-line: #efd7ab;
+
+    --red: #b42318;
+    --red-soft: #fbeae7;
+    --red-line: #f0c4bd;
+
+    --green: #12703a;
+    --green-soft: #e7f3ec;
+    --green-line: #bfe0c9;
+
+    --sans: system-ui, "Segoe UI", Roboto, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --mono: "Cascadia Code", "SF Mono", ui-monospace, Consolas, "Liberation Mono", monospace;
+
+    --maxw: 62rem;
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- header ---------- */
+  .masthead {
+    background:
+      radial-gradient(120% 140% at 88% -10%, rgba(15,118,110,.10), transparent 60%),
+      linear-gradient(180deg, #ffffff, #fbfdfe);
+    border-bottom: 1px solid var(--line);
+  }
+  .masthead .wrap { padding-top: 54px; padding-bottom: 46px; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 9px;
+    font-size: .78rem; font-weight: 650; letter-spacing: .10em; text-transform: uppercase;
+    color: var(--teal-700);
+  }
+  .eyebrow .loop {
+    display: inline-grid; place-items: center;
+    width: 22px; height: 22px; border-radius: 6px;
+    background: var(--teal-soft); border: 1px solid var(--teal-line);
+    font-size: .8rem;
+  }
+  h1 {
+    font-size: clamp(1.95rem, 1.35rem + 2.4vw, 3rem);
+    line-height: 1.08; letter-spacing: -.022em; font-weight: 820;
+    margin: 18px 0 0; max-width: 22ch; text-wrap: balance;
+  }
+  .lede {
+    margin: 16px 0 0; max-width: 60ch; font-size: 1.12rem; color: var(--ink-2);
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 24px; }
+  .chip {
+    font-size: .8rem; font-weight: 600; color: var(--ink-2);
+    background: var(--surface); border: 1px solid var(--line-strong);
+    padding: 5px 11px; border-radius: 999px;
+  }
+  .chip b { color: var(--teal-700); font-weight: 700; }
+
+  /* ---------- sections ---------- */
+  main .wrap { padding-top: 8px; padding-bottom: 72px; }
+  section { padding-top: 44px; }
+  .kicker {
+    font-size: .76rem; font-weight: 700; letter-spacing: .11em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0 0 10px;
+  }
+  h2 {
+    font-size: 1.5rem; letter-spacing: -.014em; font-weight: 760; margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  h3 { font-size: 1.06rem; font-weight: 700; margin: 0 0 4px; letter-spacing: -.01em; }
+  p { margin: 10px 0; color: var(--ink-2); }
+  p.tight { margin-top: 4px; }
+  strong { color: var(--ink); font-weight: 680; }
+  code, .mono {
+    font-family: var(--mono); font-size: .86em;
+    background: #eef2f7; border: 1px solid var(--line);
+    padding: 1px 6px; border-radius: 6px; color: #23425f;
+    white-space: nowrap;
+  }
+
+  .card {
+    background: var(--surface); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 22px 24px;
+    box-shadow: 0 1px 2px rgba(21,32,46,.04);
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 720px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+  /* ---------- summary callout ---------- */
+  .summary {
+    display: flex; gap: 16px; align-items: flex-start;
+    background: var(--teal-soft); border: 1px solid var(--teal-line);
+    border-radius: var(--radius); padding: 20px 22px; margin-top: 28px;
+  }
+  .summary .mark { font-size: 1.4rem; line-height: 1.2; }
+  .summary p { margin: 0; color: #1d3f3b; }
+  .summary strong { color: #0c3b36; }
+
+  /* ---------- round-trip diagram ---------- */
+  .legs { display: grid; gap: 14px; margin-top: 8px; }
+  .leg {
+    border: 1px solid var(--line); border-radius: var(--radius);
+    background: var(--surface); overflow: hidden;
+  }
+  .leg-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 18px; border-bottom: 1px solid var(--line);
+    font-weight: 700; font-size: .95rem;
+  }
+  .leg-num {
+    display: inline-grid; place-items: center; width: 24px; height: 24px;
+    border-radius: 7px; font-size: .82rem; font-weight: 800; color: #fff;
+  }
+  .leg-1 .leg-num { background: var(--teal); }
+  .leg-2 .leg-num { background: var(--blue); }
+  .leg-1 .leg-head { color: var(--teal-700); }
+  .leg-2 .leg-head { color: var(--blue); }
+  .leg-tag { margin-left: auto; font-size: .74rem; font-weight: 650; letter-spacing: .04em;
+    text-transform: uppercase; color: var(--ink-3); }
+
+  .flow { display: flex; align-items: stretch; gap: 0; padding: 18px; flex-wrap: wrap; }
+  .node {
+    flex: 1 1 150px; min-width: 130px;
+    border: 1px solid var(--line-strong); border-radius: 10px;
+    background: var(--surface-2); padding: 12px 13px;
+  }
+  .node .nlabel { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em;
+    color: var(--ink-3); font-weight: 700; }
+  .node .nbody { font-size: .92rem; color: var(--ink); margin-top: 3px; font-weight: 560; }
+  .node.accent-teal { border-color: var(--teal-line); background: var(--teal-soft); }
+  .node.accent-blue { border-color: #cfe0ef; background: var(--blue-soft); }
+  .arrow {
+    flex: 0 0 42px; display: grid; place-items: center;
+    color: var(--ink-3); font-size: 1.3rem; font-weight: 700;
+  }
+  .leg-2 .arrow { color: var(--blue); }
+  .leg-1 .arrow { color: var(--teal); }
+  @media (max-width: 640px) {
+    .flow { flex-direction: column; }
+    .arrow { flex-basis: 26px; transform: rotate(90deg); }
+  }
+
+  /* ---------- steps ---------- */
+  ol.steps { list-style: none; counter-reset: s; margin: 4px 0 0; padding: 0; display: grid; gap: 12px; }
+  ol.steps > li {
+    counter-increment: s; position: relative;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 16px 18px 16px 60px;
+  }
+  ol.steps > li::before {
+    content: counter(s); position: absolute; left: 16px; top: 15px;
+    width: 30px; height: 30px; border-radius: 8px;
+    background: var(--ink); color: #fff; font-weight: 800; font-size: .92rem;
+    display: grid; place-items: center;
+  }
+  ol.steps h3 { margin-bottom: 2px; }
+  ol.steps p { margin: 4px 0 0; font-size: .96rem; }
+
+  /* ---------- rule list ---------- */
+  ul.rules { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 9px; }
+  ul.rules li {
+    display: flex; gap: 11px; align-items: flex-start;
+    font-size: .97rem; color: var(--ink-2);
+  }
+  ul.rules li .tick {
+    flex: 0 0 auto; margin-top: 2px; width: 20px; height: 20px; border-radius: 999px;
+    display: grid; place-items: center; font-size: .72rem; font-weight: 800; color: #fff;
+    background: var(--teal);
+  }
+  ul.rules li b { color: var(--ink); }
+
+  ul.plain { margin: 8px 0 0; padding-left: 0; list-style: none; display: grid; gap: 10px; }
+  ul.plain li { position: relative; padding-left: 20px; color: var(--ink-2); font-size: .98rem; }
+  ul.plain li::before {
+    content: ""; position: absolute; left: 2px; top: .62em;
+    width: 7px; height: 7px; border-radius: 2px; background: var(--teal); transform: rotate(45deg);
+  }
+
+  /* ---------- callouts ---------- */
+  .note { border-radius: 10px; padding: 14px 16px 14px 16px; border: 1px solid; display: flex; gap: 12px; }
+  .note .ico { flex: 0 0 auto; font-weight: 800; font-size: .95rem; }
+  .note p { margin: 0; font-size: .95rem; }
+  .note h3 { font-size: .96rem; margin-bottom: 3px; }
+  .note.tip { background: var(--green-soft); border-color: var(--green-line); }
+  .note.tip .ico, .note.tip h3 { color: var(--green); }
+  .note.warn { background: var(--amber-soft); border-color: var(--amber-line); }
+  .note.warn .ico, .note.warn h3 { color: var(--amber); }
+  .note.block { background: var(--red-soft); border-color: var(--red-line); }
+  .note.block .ico, .note.block h3 { color: var(--red); }
+  .note p, .note li { color: #3f4a5a; }
+
+  /* ---------- table ---------- */
+  .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: var(--radius); margin-top: 8px; }
+  table { border-collapse: collapse; width: 100%; min-width: 520px; font-size: .95rem; }
+  th, td { text-align: left; padding: 12px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th { background: var(--surface-2); font-size: .76rem; text-transform: uppercase; letter-spacing: .06em; color: var(--ink-3); font-weight: 700; }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-weight: 620; color: var(--ink); white-space: nowrap; }
+  tbody tr:nth-child(even) td { background: #fcfdfe; }
+
+  /* ---------- messages list ---------- */
+  .msg { display: grid; gap: 12px; margin-top: 8px; }
+  .msg-row {
+    display: grid; grid-template-columns: 12px 1fr; gap: 14px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px;
+  }
+  .msg-row .stripe { border-radius: 3px; }
+  .msg-row.w .stripe { background: var(--amber); }
+  .msg-row.i .stripe { background: var(--blue); }
+  .msg-row.e .stripe { background: var(--red); }
+  .msg-row .quote { font-size: .92rem; color: var(--ink); font-weight: 560; }
+  .msg-row .mean { font-size: .9rem; color: var(--ink-2); margin-top: 4px; }
+
+  .contract { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 8px; }
+  @media (max-width: 760px) { .contract { grid-template-columns: 1fr; } }
+  .col { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px 18px 20px; }
+  .col .col-h { display: flex; align-items: center; gap: 8px; font-size: .78rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 12px; }
+  .col .col-h::before { content: ""; width: 9px; height: 9px; border-radius: 3px; }
+  .col.does .col-h { color: var(--green); } .col.does .col-h::before { background: var(--green); }
+  .col.req .col-h { color: var(--teal-700); } .col.req .col-h::before { background: var(--teal); }
+  .col.doesnt .col-h { color: var(--red); } .col.doesnt .col-h::before { background: var(--red); }
+  .col ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 9px; }
+  .col li { font-size: .92rem; color: var(--ink-2); padding-left: 18px; position: relative; }
+  .col li::before { position: absolute; left: 0; top: 0; font-weight: 800; }
+  .col.does li::before { content: "\2713"; color: var(--green); }
+  .col.req li::before { content: "\2022"; color: var(--teal); }
+  .col.doesnt li::before { content: "\00d7"; color: var(--red); }
+  .col li b { color: var(--ink); }
+
+  .deflist { display: grid; gap: 2px; }
+  .deflist .term { font-weight: 700; color: var(--ink); font-size: .98rem; }
+  .deflist .def { color: var(--ink-2); font-size: .95rem; margin-bottom: 12px; }
+
+  footer { border-top: 1px solid var(--line); }
+  footer .wrap { padding: 26px 24px 40px; color: var(--ink-3); font-size: .85rem; display: flex; flex-wrap: wrap; gap: 8px 18px; justify-content: space-between; }
+
+  hr.div { border: none; border-top: 1px solid var(--line); margin: 0; }
+  @media print {
+    @page { size: A4; margin: 12mm; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .node, .msg-row, .summary, tr { break-inside: avoid; }
+    .kicker, h2, h3, .term { break-after: avoid; }
+    .grid-2 { display: block; }
+    .grid-2 > * + * { margin-top: 12px; }
+  }
+</style>
+
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <span class="eyebrow"><span class="loop">&#9432;</span> Acme Tasks - Feature guide</span>
+    <h1>Recurring tasks</h1>
+    <p class="lede">Make a task repeat on a schedule. When you complete a recurring task, Acme Tasks makes the next copy of the task for the next due date. A Project Owner can set a repeat on any task in the project. A Member can set a repeat only on tasks assigned to them.</p>
+    <div class="chips">
+      <span class="chip">Open from <b>Task details</b></span>
+      <span class="chip">Field <b>Repeat</b></span>
+      <span class="chip">For <b>Project Owner</b> and <b>Member</b></span>
+      <span class="chip">Shown in <b>List</b> and <b>Calendar</b></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="summary">
+      <span class="mark">&#9432;</span>
+      <p><strong>In one line:</strong> the next copy of a recurring task is made when you mark the current copy <strong>Done</strong>. It is not made on a timer. The new copy gets the next due date from the repeat rule, the same title, assignee, labels and checklist, and an empty comment list.</p>
+    </div>
+
+    <section style="padding-top:28px;">
+      <p class="kicker">Where the next task comes from</p>
+      <h2>When is the next copy made?</h2>
+      <p>The next copy is made at these times:</p>
+      <ul class="plain">
+        <li><strong>When you mark the task Done</strong> in the task list, on the board, or in the task details.</li>
+        <li><strong>When a rule in Automations marks the task Done</strong>, for example "close the task when the linked pull request is merged".</li>
+      </ul>
+      <p>The next copy is <strong>not made</strong> at these times:</p>
+      <ul class="plain">
+        <li><strong>When the due date passes.</strong> An overdue recurring task stays open. No new copy is made until you complete it.</li>
+        <li><strong>When you delete the task.</strong> The repeat stops.</li>
+        <li><strong>When you move the task back from Done to Open.</strong> The copy that was already made stays.</li>
+      </ul>
+      <div class="note warn" style="margin-top:14px;">
+        <span class="ico">&#9888;</span>
+        <div>
+          <h3>Archived projects</h3>
+          <p>You cannot complete a task in an archived project. So no new copies are made in an archived project.</p>
+        </div>
+      </div>
+      <div class="note tip" style="margin-top:14px;">
+        <span class="ico">&#9873;</span>
+        <div>
+          <h3>"Ends after"</h3>
+          <p>If you set <strong>Ends after</strong> to a number of times, the repeat stops after that number of copies. The last copy shows "Last in series" next to the due date.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTRACT AT A GLANCE -->
+    <section>
+      <p class="kicker">The feature, in short</p>
+      <h2>What this does, requires, and does not do</h2>
+      <div class="contract">
+        <div class="col does">
+          <p class="col-h">What it does</p>
+          <ul>
+            <li>Makes <b>one new copy</b> each time you complete the task.</li>
+            <li>Sets the <b>next due date</b> from the repeat rule.</li>
+            <li>Copies the <b>title, assignee, labels and checklist</b>.</li>
+            <li>Shows a <b>repeat icon</b> in the list and the calendar.</li>
+          </ul>
+        </div>
+        <div class="col req">
+          <p class="col-h">What it requires</p>
+          <ul>
+            <li>The role <b>Project Owner</b>, or <b>Member</b> for your own tasks.</li>
+            <li>A <b>due date</b> on the task.</li>
+          </ul>
+        </div>
+        <div class="col doesnt">
+          <p class="col-h">What it does not do</p>
+          <ul>
+            <li>Make copies <b>in advance</b>. Only the next copy exists.</li>
+            <li>Copy <b>comments</b> or <b>attachments</b>.</li>
+            <li>Make a copy when the due date <b>passes</b>.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHAT IT IS -->
+    <section>
+      <p class="kicker">The idea</p>
+      <h2>How a recurring task moves forward</h2>
+      <div class="legs">
+        <div class="leg leg-1">
+          <div class="leg-head"><span class="leg-num">1</span> The next copy is made<span class="leg-tag">When you complete the task</span></div>
+          <div class="flow">
+            <div class="node accent-teal">
+              <div class="nlabel">Mark Done</div>
+              <div class="nbody">In the list, on the board, or by an automation</div>
+            </div>
+            <div class="arrow">&rarr;</div>
+            <div class="node">
+              <div class="nlabel">Repeat rule</div>
+              <div class="nbody">Gives the next due date</div>
+            </div>
+            <div class="arrow">&rarr;</div>
+            <div class="node accent-blue">
+              <div class="nlabel">New task</div>
+              <div class="nbody">Shows in the list with the repeat icon</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="leg leg-2">
+          <div class="leg-head"><span class="leg-num">2</span> The repeat stops<span class="leg-tag">After a change</span></div>
+          <div class="flow">
+            <div class="node">
+              <div class="nlabel">Task edit</div>
+              <div class="nbody">You set Repeat to "Never", or the "Ends after" count is reached</div>
+            </div>
+            <div class="arrow">&rarr;</div>
+            <div class="node accent-blue">
+              <div class="nlabel">No new copy</div>
+              <div class="nbody">The task completes like a normal task</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- KEY TERMS -->
+    <section>
+      <p class="kicker">Vocabulary</p>
+      <h2>The terms used here</h2>
+      <div class="grid-2">
+        <div class="card">
+          <div class="deflist">
+            <div class="term">Repeat rule</div>
+            <div class="def">How often the task repeats: Daily, Weekly, Monthly, or Custom.</div>
+            <div class="term">Series</div>
+            <div class="def">All copies of one recurring task.</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="deflist">
+            <div class="term">Ends after</div>
+            <div class="def">The number of copies after which the repeat stops. Empty means the repeat does not stop.</div>
+            <div class="term">Last in series</div>
+            <div class="def">The text on the last copy before the repeat stops.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- HOW TO -->
+    <section>
+      <p class="kicker">Getting there in the UI</p>
+      <h2>How to make a task repeat</h2>
+      <ol class="steps">
+        <li>
+          <h3>Open the task</h3>
+          <p>Select the task in the list to open <strong>Task details</strong>.</p>
+        </li>
+        <li>
+          <h3>Set a due date</h3>
+          <p>The <strong>Repeat</strong> field is disabled until the task has a due date.</p>
+        </li>
+        <li>
+          <h3>Select a repeat rule</h3>
+          <p>In <strong>Repeat</strong>, select <strong>Daily</strong>, <strong>Weekly</strong>, <strong>Monthly</strong> or <strong>Custom...</strong>. Optional: set <strong>Ends after</strong>.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- WHO SEES WHAT -->
+    <section>
+      <p class="kicker">Who can use it</p>
+      <h2>What each role can do</h2>
+      <div class="card">
+        <ul class="rules">
+          <li><span class="tick">&#10003;</span><span><b>Project Owner</b> can set, change and stop the repeat on any task in the project.</span></li>
+          <li><span class="tick">&#10003;</span><span><b>Member</b> can set, change and stop the repeat only on tasks assigned to them.</span></li>
+          <li><span class="tick">&#10003;</span><span><b>Viewer</b> sees the repeat icon, but the <b>Repeat</b> field is read-only.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- FIELDS -->
+    <section>
+      <p class="kicker">The task details</p>
+      <h2>The fields</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Field</th><th>What it does</th></tr></thead>
+          <tbody>
+            <tr><td>Repeat</td><td>The repeat rule. <strong>Never</strong> means the task does not repeat.</td></tr>
+            <tr><td>Ends after</td><td>The number of copies, from 1 to 365. Empty means no end.</td></tr>
+            <tr><td>Next due</td><td>Read-only. The due date that the next copy gets.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MESSAGES -->
+    <section>
+      <p class="kicker">On the screen</p>
+      <h2>Messages you may see</h2>
+      <div class="msg">
+        <div class="msg-row i">
+          <div class="stripe"></div>
+          <div>
+            <div class="quote">"Next task created for 12 May."</div>
+            <div class="mean">You completed a recurring task. The new copy is in the list.</div>
+          </div>
+        </div>
+        <div class="msg-row w">
+          <div class="stripe"></div>
+          <div>
+            <div class="quote">"Set a due date to repeat this task."</div>
+            <div class="mean">The task has no due date. Set one, then select a repeat rule.</div>
+          </div>
+        </div>
+        <div class="msg-row e">
+          <div class="stripe"></div>
+          <div>
+            <div class="quote">"Could not create the next task. Try again."</div>
+            <div class="mean">The task is Done, but the new copy was not made. Move the task back to Open and complete it again.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIMITATIONS -->
+    <section>
+      <p class="kicker">Boundaries</p>
+      <h2>Limitations</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Area</th><th>What to know</th></tr></thead>
+          <tbody>
+            <tr><td>One copy at a time</td><td>Only the next copy exists. The calendar does not show future copies.</td></tr>
+            <tr><td>Comments</td><td>Comments and attachments stay on the completed copy.</td></tr>
+            <tr><td>Ends after</td><td>The highest value is 365.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- KNOWN BEHAVIOURS -->
+    <section>
+      <p class="kicker">Good to know</p>
+      <h2>Known behaviours and things to watch</h2>
+      <div class="grid-2">
+        <div class="note warn">
+          <span class="ico">&#9888;</span>
+          <div>
+            <h3>Late completion does not skip dates</h3>
+            <p>The next due date is counted from the old due date, not from today. If you complete a daily task three days late, the new copy is also overdue.</p>
+          </div>
+        </div>
+        <div class="note tip">
+          <span class="ico">&#9873;</span>
+          <div>
+            <h3>Month ends</h3>
+            <p>A monthly task due on the 31st is due on the last day of shorter months.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Acme Tasks - Recurring tasks</span>
+    <span>Feature guide for Project Owners and Members</span>
+  </div>
+</footer>
+</body>
+</html>

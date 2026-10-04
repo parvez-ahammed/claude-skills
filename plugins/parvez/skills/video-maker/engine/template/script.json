@@ -1,0 +1,23 @@
+{
+  "name": "my-video",
+  "size": [1920, 1080],
+  "fps": 30,
+  "target": 20,
+  "voice": { "name": "af_heart", "speed": 1.05, "pronounce": { "Acme": "Ack-me" } },
+  "music": { "bpm": 112, "chords": ["C", "Am", "F", "G"], "intro": "tension", "dropAt": "scene:reveal+0.3", "endAt": "scene:cta+0.3" },
+  "scenes": [
+    { "id": "hook", "lines": [{ "id": "hook", "say": "Still copying data between tools by hand?" }] },
+    { "id": "reveal", "min": 2.8, "lead": 0.8, "lines": [{ "id": "reveal", "say": "Meet Acme." }] },
+    { "id": "feature", "weight": 2, "lines": [{ "id": "feature", "say": "It keeps every system in sync, automatically." }] },
+    { "id": "cta", "hold": 1.6, "lines": [{ "id": "cta", "say": "Try Acme today." }] }
+  ],
+  "sfx": [
+    { "type": "ticks", "at": 0.2, "until": "sceneEnd:hook-0.2" },
+    { "type": "riser", "at": "scene:reveal+0.3", "len": 1.2 },
+    { "type": "impact", "at": "scene:reveal+0.3" },
+    { "type": "whoosh", "at": "scene:feature" },
+    { "type": "pop", "at": "word:feature:every" },
+    { "type": "success", "at": "lineEnd:feature" },
+    { "type": "whoosh", "at": "scene:cta" }
+  ]
+}

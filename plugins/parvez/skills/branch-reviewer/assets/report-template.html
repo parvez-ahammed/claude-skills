@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Review - {{REF}} {{TITLE}}</title>
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #d8dce3;
+  --text: #1b1f26;
+  --text-dim: #5b6472;
+  --accent: #1f6feb;
+  --high: #c0392b;
+  --high-bg: #fdecea;
+  --med: #b7791f;
+  --med-bg: #fdf6e3;
+  --low: #2c7a7b;
+  --low-bg: #e6f6f6;
+  --ok: #2f855a;
+  --ok-bg: #e8f5ee;
+  --code-bg: #f0f2f5;
+  --shadow: 0 1px 2px rgba(16,24,40,.06), 0 1px 3px rgba(16,24,40,.1);
+}
+html[data-theme="dark"] {
+  --bg: #0f1419;
+  --surface: #171c23;
+  --surface-2: #1e252e;
+  --border: #2c343f;
+  --text: #e4e8ee;
+  --text-dim: #98a2b3;
+  --accent: #58a6ff;
+  --high: #ff7b72;
+  --high-bg: #34181a;
+  --med: #e3b341;
+  --med-bg: #33290f;
+  --low: #56d4c4;
+  --low-bg: #10302e;
+  --ok: #6ee7a5;
+  --ok-bg: #10281c;
+  --code-bg: #1e252e;
+  --shadow: 0 1px 2px rgba(0,0,0,.4);
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.6 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  transition: background .15s, color .15s;
+}
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 80px; }
+header {
+  position: sticky; top: 0; z-index: 10; background: var(--surface);
+  border-bottom: 1px solid var(--border); margin-bottom: 28px;
+}
+.headrow {
+  max-width: 1080px; margin: 0 auto; padding: 16px 24px;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.headrow h1 { font-size: 18px; margin: 0; flex: 1; font-weight: 600; }
+.headrow .sub { color: var(--text-dim); font-size: 13px; width: 100%; margin-top: -6px; }
+#themeToggle {
+  background: var(--surface-2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 12px; font-size: 13px; cursor: pointer;
+}
+#themeToggle:hover { border-color: var(--accent); color: var(--accent); }
+h2 {
+  font-size: 16px; margin: 36px 0 12px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--border); font-weight: 600;
+}
+h3 { font-size: 14px; margin: 24px 0 8px; font-weight: 600; }
+.cards { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 8px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 12px 16px; min-width: 108px; box-shadow: var(--shadow);
+}
+.card .n { font-size: 22px; font-weight: 700; line-height: 1.2; }
+.card .l { font-size: 12px; color: var(--text-dim); text-transform: uppercase; letter-spacing: .04em; }
+.card.high .n { color: var(--high); }
+.card.med .n { color: var(--med); }
+.card.low .n { color: var(--low); }
+table {
+  width: 100%; border-collapse: collapse; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 8px; overflow: hidden;
+  font-size: 14px; margin-bottom: 8px;
+}
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+th { background: var(--surface-2); font-weight: 600; font-size: 13px; }
+tr:last-child td { border-bottom: none; }
+.badge {
+  display: inline-block; padding: 1px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+  white-space: nowrap;
+}
+.badge.high { background: var(--high-bg); color: var(--high); }
+.badge.med { background: var(--med-bg); color: var(--med); }
+.badge.low { background: var(--low-bg); color: var(--low); }
+.badge.ok, .badge.covered { background: var(--ok-bg); color: var(--ok); }
+.badge.missing { background: var(--high-bg); color: var(--high); }
+.badge.partial { background: var(--med-bg); color: var(--med); }
+.badge.verified { background: var(--ok-bg); color: var(--ok); }
+.badge.hypothesis { background: var(--med-bg); color: var(--med); }
+.badge.unknown { background: var(--surface-2); color: var(--text-dim); }
+.finding, .tc {
+  background: var(--surface); border: 1px solid var(--border);
+  border-left: 3px solid var(--border); border-radius: 8px;
+  padding: 14px 18px; margin-bottom: 12px; box-shadow: var(--shadow);
+}
+.finding.high { border-left-color: var(--high); }
+.finding.med { border-left-color: var(--med); }
+.finding.low { border-left-color: var(--low); }
+.finding.refuted { opacity: .65; border-left-color: var(--text-dim); }
+.finding h4, .tc h4 {
+  margin: 0 0 8px; font-size: 15px; font-weight: 600;
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+}
+.finding .meta, .tc .meta { color: var(--text-dim); font-size: 12.5px; margin-bottom: 8px; }
+.finding p, .tc p { margin: 6px 0; }
+.finding .label, .tc .label { font-weight: 600; }
+code, .path {
+  font-family: "Cascadia Mono", Consolas, "SF Mono", Menlo, monospace;
+  font-size: 12.5px; background: var(--code-bg); padding: 1px 5px; border-radius: 4px;
+}
+ol.steps { margin: 6px 0 6px 20px; padding: 0; }
+ol.steps li { margin-bottom: 3px; }
+.footer {
+  margin-top: 40px; background: var(--surface-2); border: 1px dashed var(--border);
+  border-radius: 8px; padding: 16px 20px; color: var(--text-dim); font-size: 14px;
+}
+.footer strong { color: var(--text); }
+.footer ul { margin: 8px 0 0 20px; padding: 0; }
+</style>
+</head>
+<body>
+<header>
+  <div class="headrow">
+    <h1>Review - {{REF}} {{TITLE}}</h1>
+    <button id="themeToggle" type="button">Dark mode</button>
+    <div class="sub">{{BASE}}...{{HEAD}} &middot; {{FILE_COUNT}} files &middot; generated {{DATE}}</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <h2>Summary</h2>
+  <div class="cards">
+    <div class="card high"><div class="n">{{N_HIGH}}</div><div class="l">High</div></div>
+    <div class="card med"><div class="n">{{N_MED}}</div><div class="l">Medium</div></div>
+    <div class="card low"><div class="n">{{N_LOW}}</div><div class="l">Low</div></div>
+    <div class="card"><div class="n">{{N_TESTS}}</div><div class="l">Test cases</div></div>
+  </div>
+  <p>{{SUMMARY_PARAGRAPH}}</p>
+
+  <h2>Impact map</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Area</th><th>Direct / Indirect</th><th>Why impacted</th><th>Risk</th></tr></thead>
+    <tbody>{{IMPACT_ROWS}}</tbody>
+  </table>
+  </div>
+
+  <h2>Requirement coverage</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>#</th><th>Criterion</th><th>Implemented by</th><th>Verified by</th><th>Status</th></tr></thead>
+    <tbody>{{COVERAGE_ROWS}}</tbody>
+  </table>
+  </div>
+
+  <h2>Findings</h2>
+  {{FINDINGS}}
+
+  <h2>Refuted during adversarial pass</h2>
+  {{REFUTED}}
+
+  <h2>Test cases</h2>
+  {{TEST_CASES}}
+
+  <div class="footer">
+    <strong>Not covered by this review (verify separately):</strong>
+    {{FOOTER_LIST}}
+  </div>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('themeToggle');
+  var stored = null;
+  try { stored = localStorage.getItem('branch-review-theme'); } catch (e) {}
+  var initial = stored || (window.matchMedia
+    && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  apply(initial);
+  btn.addEventListener('click', function () {
+    apply(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  });
+  function apply(theme) {
+    root.setAttribute('data-theme', theme);
+    btn.textContent = theme === 'dark' ? 'Light mode' : 'Dark mode';
+    try { localStorage.setItem('branch-review-theme', theme); } catch (e) {}
+  }
+})();
+</script>
+</body>
+</html>
+
+<!--
+MARKUP SNIPPETS - delete this comment block in the generated report.
+
+Impact row:
+<tr><td>Files page</td><td>Direct</td><td>New upload panel mounted here</td><td>High</td></tr>
+
+Coverage row:
+<tr><td>1</td><td>Upload a file once, attach it to every matching project</td>
+    <td><code>src/Files/UploadService.cs:210</code></td><td>TC-01</td>
+    <td><span class="badge covered">covered</span></td></tr>
+
+Finding:
+<div class="finding high">
+  <h4>F-01 <span class="badge high">high</span> <span class="badge verified">verified</span>
+      Duplicate upload overwrites without warning</h4>
+  <div class="meta"><span class="path">src/Files/UploadService.cs:284</span> &middot; Covered by TC-04</div>
+  <p><span class="label">Issue:</span> ...</p>
+  <p><span class="label">Impact:</span> ...</p>
+  <p><span class="label">Fix:</span> ...</p>
+</div>
+
+Refuted finding (same shape, add class refuted):
+<div class="finding refuted">
+  <h4>F-09 <span class="badge unknown">refuted</span> Title</h4>
+  <p><span class="label">Disproved by:</span> ...</p>
+</div>
+
+Test case:
+<div class="tc">
+  <h4>TC-01 <span class="badge high">P1</span> Upload a valid file to a record linked to two projects</h4>
+  <div class="meta">Area: Files / upload &middot; Type: Functional &middot; Covers: F-01</div>
+  <p><span class="label">Preconditions:</span> ...</p>
+  <p><span class="label">Steps:</span></p>
+  <ol class="steps"><li>...</li><li>...</li></ol>
+  <p><span class="label">Expected:</span> ...</p>
+</div>
+-->

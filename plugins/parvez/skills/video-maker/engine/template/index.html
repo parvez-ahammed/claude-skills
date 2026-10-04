@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="brand.css">
+<style>
+/* Styles for this video's own scenes. Use --vm-* colours and calc(var(--u) * N) sizes, never raw values. */
+.chip { display: flex; align-items: center; gap: calc(var(--u) * 12); padding: calc(var(--u) * 14) calc(var(--u) * 22); font-size: calc(var(--u) * 24); font-weight: 600; white-space: nowrap; }
+.chip b { color: var(--vm-error); font-size: calc(var(--u) * 18); }
+.brandname { font-size: calc(var(--u) * 150); font-weight: 700; letter-spacing: -0.03em; color: var(--vm-accent); }
+.sysrow { display: flex; align-items: center; justify-content: space-between; height: calc(var(--u) * 84); padding: 0 calc(var(--u) * 26); border-bottom: 1px solid var(--vm-border); font-size: calc(var(--u) * 24); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script src="build/timeline.js"></script>
+<script src="/engine/lib/stage.js"></script>
+<script>
+const portrait = H > W;
+
+// ---------- hook: the pain ----------
+const hook = scene("hook");
+const hookTitle = sayLine(hook.root, H * .2, "hook", { breakAfter: ["data"], highlight: ["hand"] });
+const chips = ["Report_v7_FINAL.xlsx", "RE: FW: numbers", "export (2).csv"].map((name, i) => {
+  const c = el("div", "vm-card chip", hook.root, `${name}<b>${["Out of date", "Conflict", "Which one?"][i]}</b>`);
+  return at(c, portrait ? W * .1 : W * (.08 + .3 * i), portrait ? H * (.45 + i * .1) : H * .6);
+});
+onFrame(t => {
+  if (!hook.visible(t)) return;
+  hookTitle.update(t);
+  chips.forEach((c, i) => pop(c, t, S("hook", .6 + i * .35), { r: Math.sin(t * 2 + i) * 3 }));
+});
+
+// ---------- reveal: logo ----------
+const reveal = scene("reveal");
+const logoBox = at(el("div", "", reveal.root), 0, 0);
+Object.assign(logoBox.style, { width: W + "px", height: H + "px", display: "flex", alignItems: "center", justifyContent: "center", gap: 40 * U + "px", flexDirection: portrait ? "column" : "row" });
+const logoImg = el("img", "", logoBox);
+logoImg.src = "assets/logo.svg";
+logoImg.style.height = 170 * U + "px";
+const logoName = el("div", "brandname", logoBox, "Acme");
+onFrame(t => {
+  if (!reveal.visible(t)) return;
+  pop(logoImg, t, S("reveal", .3));
+  const p = ease.out(prog(t, S("reveal", .55), S("reveal", 1.1)));
+  logoName.style.clipPath = `inset(-10% ${100 - p * 100}% -10% 0)`;
+  place(logoName, { x: (1 - p) * -30 * U, o: p > 0 ? 1 : 0 });
+});
+
+// ---------- feature: explainer column + product card ----------
+const feature = scene("feature");
+const col = column(feature.root, {
+  x: portrait ? 90 * U : 130 * U, y: portrait ? 220 * U : 260 * U, width: portrait ? W - 180 * U : 760 * U,
+  eyebrow: "How it works", title: "Every system,<br>always in sync", t0: S("feature", .2),
+  bullets: [["Connects the tools you already use", L("feature", .2)], ["Runs on a schedule", Wd("feature", "automatically")], ["No files, no emails", LE("feature", .4)]],
+});
+const card = at(el("div", "vm-card", feature.root), portrait ? 90 * U : W - 780 * U, portrait ? H * .55 : H * .24);
+card.style.width = (portrait ? W - 180 * U : 640 * U) + "px";
+const systems = ["Sales", "Finance", "Warehouse", "Support"].map(name => {
+  const row = el("div", "sysrow", card, `<span>${name}</span><span class="vm-pill run">Syncing</span>`);
+  return { row, pill: row.lastChild };
+});
+onFrame(t => {
+  if (!feature.visible(t)) return;
+  col(t);
+  pop(card, t, S("feature", .4));
+  systems.forEach((s, i) => {
+    const done = t >= Wd("feature", "sync", .3 + i * .3);
+    s.pill.className = "vm-pill " + (done ? "ok" : "run");
+    s.pill.textContent = done ? "In sync" : "Syncing";
+  });
+});
+
+// ---------- call to action (last scene: stays sharp to the end, so the last frame works as a thumbnail) ----------
+const cta = scene("cta");
+const ctaTitle = sayLine(cta.root, H * .3, "cta", { highlight: ["today"], size: 96 });
+const ctaBtn = at(el("div", "", cta.root, `<span class="vm-btn">acme.example</span>`), 0, H * .55);
+Object.assign(ctaBtn.style, { width: W + "px", display: "flex", justifyContent: "center" });
+onFrame(t => {
+  if (!cta.visible(t)) return;
+  ctaTitle.update(t);
+  pop(ctaBtn, t, LE("cta", .2));
+});
+</script>
+</body>
+</html>
