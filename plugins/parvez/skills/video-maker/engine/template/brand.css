@@ -1,0 +1,28 @@
+/* Brand for this video. Replace every value with the product's REAL tokens and note where each came from
+   (theme file, CSS variables, landing page, brand guide). Guessing from one file got a video rejected once:
+   a colour used only for warnings was taken as the brand accent. */
+@font-face { font-family: Brand; font-weight: 400; src: url(/engine/node_modules/@fontsource/inter/files/inter-latin-400-normal.woff2); }
+@font-face { font-family: Brand; font-weight: 500; src: url(/engine/node_modules/@fontsource/inter/files/inter-latin-500-normal.woff2); }
+@font-face { font-family: Brand; font-weight: 600; src: url(/engine/node_modules/@fontsource/inter/files/inter-latin-600-normal.woff2); }
+@font-face { font-family: Brand; font-weight: 700; src: url(/engine/node_modules/@fontsource/inter/files/inter-latin-700-normal.woff2); }
+
+:root {
+  --vm-font: Brand, "Segoe UI", sans-serif;
+  --vm-bg: #fbfbfd;            /* page background */
+  --vm-surface: #ffffff;       /* cards */
+  --vm-border: #e6e6ec;
+  --vm-ink: #14142b;           /* main text */
+  --vm-muted: #6e6e80;         /* secondary text */
+  --vm-muted-bg: #f1f1f5;
+  --vm-accent: #3d5afe;        /* brand colour: logo, eyebrows, primary buttons */
+  --vm-highlight: #3d5afe;     /* highlighted words in headlines */
+  --vm-cta: #3d5afe;           /* call-to-action button */
+  --vm-cta-ink: #ffffff;
+  --vm-success: #0f9d58;       /* status only */
+  --vm-error: #d93025;         /* status only */
+  --vm-caption-bg: rgba(20, 20, 43, .88);
+  --vm-caption-ink: #ffffff;
+  --vm-radius: calc(var(--u) * 22);
+  --vm-button-radius: calc(var(--u) * 12);
+  --vm-shadow: 0 calc(var(--u) * 18) calc(var(--u) * 50) rgba(20, 20, 43, .10), 0 2px 6px rgba(20, 20, 43, .05);
+}

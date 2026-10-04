@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<!--
+  Test report template. Copy, then replace everything marked TODO.
+  Order is fixed: tiles, headline, findings, cases, not covered, test data.
+  Findings come before cases so a reader who stops after one screen still learns the outcome.
+  The reader is a product owner: base branch vs this branch only, no commit hashes, no local file
+  names, open items only. Delete any section you have nothing for - never leave it empty.
+  Embed screenshots as data URIs (src="data:image/png;base64,...") so the report is one file.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TODO ticket - Test Report</title>
+<style>
+:root {
+  --bg:#EEF1F4; --surface:#FFFFFF; --surface-2:#F4F6F8; --text:#12181F; --text-muted:#55636D;
+  --border:#D7DEE4; --accent:#0C7C82; --accent-soft:#E3F3F2;
+  --pass:#1B8A4C; --pass-bg:#E4F7EA; --fail:#B23A2C; --fail-bg:#FBE7E4;
+  --block:#A6710C; --block-bg:#FBF0DC; --part:#3F65A0; --part-bg:#E7EEF7;
+  --code-bg:#0F172A; --code-text:#E2E8F0;
+  --shadow:0 1px 2px rgba(18,24,31,.06),0 4px 14px rgba(18,24,31,.06);
+}
+@media (prefers-color-scheme: dark) {
+ :root {
+  --bg:#0B1013; --surface:#121A1F; --surface-2:#162026; --text:#E7ECEF; --text-muted:#93A3AC;
+  --border:#223038; --accent:#35D6C9; --accent-soft:#123330;
+  --pass:#34D399; --pass-bg:#0E2A1E; --fail:#F98A7E; --fail-bg:#2B1414;
+  --block:#F0B429; --block-bg:#2B2210; --part:#8BB0E0; --part-bg:#16232F;
+  --code-bg:#0A1116; --code-text:#DCE6EC;
+ }
+}
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+  line-height:1.55; padding:32px 20px 80px; }
+.wrap { max-width:1100px; margin:0 auto; }
+h1 { font-size:26px; margin:0 0 6px; letter-spacing:-.01em; }
+.sub { color:var(--text-muted); margin:0 0 22px; font-size:14px; }
+.meta { display:flex; flex-wrap:wrap; gap:8px 22px; font-size:13px; color:var(--text-muted);
+  background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:12px 16px; margin-bottom:20px; }
+.meta b { color:var(--text); font-weight:600; }
+.tiles { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:8px; }
+.tile { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:14px 16px; box-shadow:var(--shadow); }
+.tile .n { font-size:26px; font-weight:650; line-height:1.1; }
+.tile .l { font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.06em; }
+.tile.p .n{color:var(--pass);} .tile.f .n{color:var(--fail);} .tile.b .n{color:var(--block);} .tile.i .n{color:var(--part);}
+.bar { height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; display:flex; margin:14px 0 26px; border:1px solid var(--border); }
+.bar i { display:block; height:100%; }
+.bar .sp{background:var(--pass);} .bar .sf{background:var(--fail);} .bar .sb{background:var(--block);}
+h2 { font-size:19px; margin:34px 0 12px; letter-spacing:-.01em; }
+h3 { font-size:15px; margin:24px 0 8px; }
+.card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:16px 18px; box-shadow:var(--shadow); margin-bottom:14px; }
+table { width:100%; border-collapse:collapse; font-size:13.5px; background:var(--surface);
+  border:1px solid var(--border); border-radius:10px; overflow:hidden; margin-bottom:16px; }
+th { text-align:left; background:var(--surface-2); font-size:11.5px; text-transform:uppercase;
+  letter-spacing:.07em; color:var(--text-muted); padding:9px 12px; border-bottom:1px solid var(--border); }
+td { padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:top; }
+tr:last-child td { border-bottom:none; }
+td.id { font-family:ui-monospace,"Cascadia Code",Consolas,monospace; font-size:12.5px; white-space:nowrap; }
+.chip { display:inline-block; font-size:11px; font-weight:650; padding:2px 9px; border-radius:99px;
+  text-transform:uppercase; letter-spacing:.05em; white-space:nowrap; }
+.chip.pass { background:var(--pass-bg); color:var(--pass); }
+.chip.fail { background:var(--fail-bg); color:var(--fail); }
+.chip.nc   { background:var(--part-bg); color:var(--part); }
+.chip.high { background:var(--fail-bg); color:var(--fail); }
+.chip.med  { background:var(--block-bg); color:var(--block); }
+.chip.low  { background:var(--part-bg); color:var(--part); }
+code { font-family:ui-monospace,"Cascadia Code",Consolas,monospace; font-size:12.5px;
+  background:var(--surface-2); border:1px solid var(--border); border-radius:4px; padding:1px 5px; }
+pre { background:var(--code-bg); color:var(--code-text); padding:12px 14px; border-radius:8px;
+  overflow-x:auto; font-size:12.5px; line-height:1.5; }
+pre code { background:none; border:none; color:inherit; padding:0; }
+figure { margin:14px 0 6px; }
+figure img { width:100%; border:1px solid var(--border); border-radius:8px; display:block; box-shadow:var(--shadow); }
+figcaption { font-size:12.5px; color:var(--text-muted); margin-top:7px; }
+.finding { border-left:4px solid var(--border); padding-left:16px; margin-bottom:26px; }
+.finding.high { border-left-color:var(--fail); }
+.finding.med  { border-left-color:var(--block); }
+.finding.low  { border-left-color:var(--part); }
+.finding h3 { margin-top:0; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.kv { font-size:13px; margin:6px 0; }
+.kv b { display:inline-block; min-width:96px; color:var(--text-muted); font-weight:600; }
+ul { margin:8px 0; padding-left:20px; font-size:13.5px; }
+li { margin:4px 0; }
+.note { background:var(--accent-soft); border:1px solid var(--accent); border-radius:8px;
+  padding:11px 14px; font-size:13.5px; margin:14px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>TODO ticket - feature name</h1>
+<p class="sub">Test report. TODO one line on what was run.</p>
+
+<div class="meta">
+  <span><b>Compared</b> TODO base branch vs TODO this branch</span>
+  <span><b>Run date</b> TODO</span>
+  <span><b>Signed in as</b> TODO role</span>
+</div>
+
+<div class="tiles">
+  <div class="tile p"><div class="n">0</div><div class="l">Passed</div></div>
+  <div class="tile f"><div class="n">0</div><div class="l">Failed</div></div>
+  <div class="tile i"><div class="n">0</div><div class="l">Not covered</div></div>
+  <div class="tile"><div class="n">0</div><div class="l">Unit tests green</div></div>
+</div>
+<div class="bar"><i class="sp" style="width:0%"></i><i class="sf" style="width:0%"></i></div>
+
+<div class="note">
+<b>Headline.</b> TODO. Two or three sentences a reader can stop after: does the feature work, and
+where is the risk.
+</div>
+
+<h2>Findings</h2>
+
+<!-- One block per finding, most serious first. Delete the ones you do not need.
+     Every finding needs: where in the code, how to reproduce, proof, suggested fix. -->
+<div class="finding high">
+<h3><span class="chip high">High</span> F-1 &mdash; TODO one line, stated as what happens</h3>
+<div class="kv"><b>Where</b> TODO the screen, dialog or endpoint</div>
+<div class="kv"><b>Reproduce</b> TODO the shortest path a reader can follow</div>
+<div class="kv"><b>Base branch</b> TODO what happens there</div>
+<div class="kv"><b>This branch</b> TODO what happens here</div>
+
+<p>TODO what happens and why. Name the cause, do not just describe the symptom.</p>
+
+<figure>
+  <img src="data:image/png;base64,TODO" alt="TODO">
+  <figcaption>TODO what the reader should look at in this image.</figcaption>
+</figure>
+
+<pre><code>TODO the page read or output that proves it</code></pre>
+
+<p><b>Suggested fix.</b> TODO.</p>
+</div>
+
+<h2>Cases</h2>
+
+<h3>Backend unit tests</h3>
+<table>
+<tr><th>ID</th><th>What it proves</th><th>Result</th><th>Evidence</th></tr>
+<tr><td class="id">BE-01</td><td>TODO</td><td><span class="chip pass">Pass</span></td><td>TODO passed, 0 failed</td></tr>
+</table>
+
+<h3>API</h3>
+<table>
+<tr><th>ID</th><th>What it proves</th><th>Result</th><th>Evidence</th></tr>
+<tr><td class="id">API-01</td><td>No token gives 401</td><td><span class="chip pass">Pass</span></td><td>401</td></tr>
+</table>
+
+<h3>Database</h3>
+<table>
+<tr><th>ID</th><th>What it proves</th><th>Result</th><th>Evidence</th></tr>
+<tr><td class="id">DB-01</td><td>TODO</td><td><span class="chip pass">Pass</span></td><td>TODO</td></tr>
+</table>
+
+<h3>User interface</h3>
+<table>
+<tr><th>ID</th><th>What it proves</th><th>Result</th><th>Evidence</th></tr>
+<tr><td class="id">UI-01</td><td>TODO</td><td><span class="chip pass">Pass</span></td><td>TODO what the screen showed</td></tr>
+<tr><td class="id">UI-02</td><td>TODO</td><td><span class="chip fail">Fail</span></td><td>F-1</td></tr>
+</table>
+
+<h3>Not covered</h3>
+<table>
+<tr><th>ID</th><th>Case</th><th>Why not</th></tr>
+<tr><td class="id">NC-01</td><td>TODO</td><td>TODO. A reason, never an apology</td></tr>
+</table>
+
+<h2>Test data</h2>
+
+<div class="card">
+<p>TODO. One sentence: the app under test was built from this branch, and how you know.</p>
+<p>TODO. What the database held, what you added for the test, and that it has been removed
+(row count before and after).</p>
+</div>
+
+</div>
+</body>
+</html>

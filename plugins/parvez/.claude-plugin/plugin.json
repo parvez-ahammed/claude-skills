@@ -1,7 +1,7 @@
 {
   "name": "parvez",
-  "description": "Parvez's Claude Code toolkit: skills for shipping (push-to-deploy VPS CI/CD, honest health checks, clean/hexagonal architecture with an enforced layering guard), refactoring (refactoring-guru orchestrator + smell detector, Fowler methods, GoF pattern scorers), review (platform-audit, grill-feature), and local usage stats (show-usage).",
-  "version": "0.2.0",
+  "description": "Parvez's Claude Code toolkit: skills for shipping (push-to-deploy VPS CI/CD, honest health checks, clean/hexagonal architecture with an enforced layering guard), refactoring (refactoring-guru orchestrator + smell detector, Fowler methods, GoF pattern scorers), review (platform-audit, grill-feature), and local usage stats (show-usage); also qa-ux. Deliver: video-maker, demo-maker, user-guide-maker, branch-test-report, seo-aeo. Review and workflow: branch-reviewer, bug-fixer, story-implementer, plain-writer, timesheet-from-transcripts.",
+  "version": "0.3.0",
   "author": {
     "name": "Parvez Ahammed",
     "email": "nordic.dev.bd@gmail.com"
@@ -21,6 +21,13 @@
     "refactoring",
     "design-patterns",
     "code-smells",
-    "code-review"
+    "code-review",
+    "video",
+    "demo",
+    "user-guide",
+    "testing",
+    "seo",
+    "technical-writing",
+    "timesheet"
   ]
 }

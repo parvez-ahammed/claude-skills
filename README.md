@@ -46,6 +46,17 @@ forgets, the harness doesn't. "*how should I approach X*" is a **skill**.
 | **platform-audit** | Find what to make shared across a milestone/backlog with DRY/KISS/YAGNI judgment: candidate commons, a verdict each (build-now / narrow / resist), a cross-phase ownership check, and a build order. Resists over-abstraction. | generic |
 | **grill-feature** | Promise-level, code-grounded interrogation of shipped features (does the real promise hold in the code, not "does it compile") returning BULLETPROOF / CRACKED / FAKE with `file:line` evidence, plus an optional unit-economics pass. Inline or workflow sweep. | generic |
 | **show-usage** | WakaTime-style local active time + token/cost/tool stats from Claude Code session transcripts. Read-only, zero-dep. | generic |
+| **qa-ux** | Pressure-test a running web app: a QA release report and a UX product-experience audit, two cross-linked HTML reports with screenshot evidence. | generic |
+| **video-maker** | Animated promo / explainer / social videos built entirely from code: HTML scenes, local TTS voice-over, generated music, captions and thumbnail, rendered to MP4. A claims check gates every on-screen statement. | generic |
+| **demo-maker** | Pixel-exact clickable HTML demos of a planned workflow, captured from the real running app (DOM + CSS snapshot) and optionally from real WinForms controls, so the product owner sees exactly how it will look. Stays close to today's app. | generic |
+| **user-guide-maker** | User-facing feature guide for a ticket or PR as self-contained HTML + PDF. Learns from the code, then a fresh agent checks every claim. Optional attach to Azure DevOps, Jira or GitHub. | generic |
+| **branch-reviewer** | Multi-seat review of a branch / PR (backend, frontend, architecture, tests, QA, text, plus a licence seat for new dependencies), a refutation pass, a ranked punch list and an HTML report. Advanced mode adds an adversarial round; comment mode re-verifies each claim before posting to GitHub, Azure DevOps or GitLab. Reads your project rules file. | generic |
+| **branch-test-report** | Runs a branch against the live app (not a reading of the diff): seeds data, predicts results with queries, drives the browser, and writes an HTML report with screenshots for a product owner (base vs branch, open items only). | generic |
+| **bug-fixer** | One bug end-to-end: reproduce, root cause before fix, a regression test that fails without the fix, then verify. Hard-won debugging traps included. | generic |
+| **story-implementer** | One user story end-to-end: analyze, break down, pick tasks, implement, test, verify, with a pre-PR gate (criteria trace, backward compatibility, every client that calls a changed endpoint). | generic |
+| **plain-writer** | House style for prose that lands in git, PRs and docs: ASCII punctuation, Simplified Technical English, no jargon, short commit messages, why-only code comments, plus a PR-description sub-skill that fills any repo's template. | generic |
+| **seo-aeo** | Audit and improve a site's SEO and AEO (AI answer engines): meta, JSON-LD, robots, sitemap, llms.txt, prerendering for SPAs, then prove it with local test scripts. | generic |
+| **timesheet-from-transcripts** | Reconstruct what you worked on for past dates (tickets, descriptions, time blocks) from local Claude Code transcripts, ready for a timesheet. Configurable ticket patterns. | generic |
 
 ### Hooks (`hooks/`)
 
