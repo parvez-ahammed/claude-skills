@@ -18,8 +18,8 @@ $AcaRg  = 'your-resource-group'
 # source-secret-name -> GitHub-secret-name
 $map = [ordered]@{
   'db-connection-string' = 'DB_CONNECTION_STRING'
-  'telegram-bot-token'   = 'TELEGRAM_BOT_TOKEN'
-  'gemini-api-key'       = 'GEMINI_API_KEY'
+  'jwt-secret'           = 'JWT_SECRET'
+  'oauth-client-secret'  = 'GOOGLE_CLIENT_SECRET'
   # ...add the rest...
 }
 

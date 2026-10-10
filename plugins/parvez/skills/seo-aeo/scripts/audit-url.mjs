@@ -93,16 +93,28 @@ const questionHeadings = headings.filter((h) => /^h\d\s+(what|how|why|who|when|w
 const robotsTxt = await get(`${origin}/robots.txt`);
 const sitemapUrls = [...robotsTxt.body.matchAll(/^sitemap:\s*(\S+)/gim)].map((m) => m[1]);
 // A local build lists the production sitemap URL; read the local copy instead.
-const sitemapUrl = sitemapUrls[0] ? `${origin}${new URL(sitemapUrls[0]).pathname}` : `${origin}/sitemap.xml`;
+const sitemapUrl = sitemapUrls[0] ? `${origin}${new URL(sitemapUrls[0], origin).pathname}` : `${origin}/sitemap.xml`;
 const sitemap = await get(sitemapUrl);
 const llms = await get(`${origin}/llms.txt`);
 const missing = await get(`${origin}/this-page-should-not-exist-${Date.now()}`);
 
+// Consecutive User-agent lines share one rule group ("User-agent: GPTBot / User-agent:
+// ClaudeBot / Disallow: /" blocks both), so build groups the way crawlers do.
 function robotsBlocks(robots, bot) {
-  const groups = robots.split(/\n(?=\s*user-agent:)/i);
-  const match = (g, name) => new RegExp(`^\\s*user-agent:\\s*${name}\\s*$`, "im").test(g);
-  const group = groups.find((g) => match(g, bot.replace(/[-]/g, "\\-"))) ?? groups.find((g) => match(g, "\\*"));
-  return group ? /^\s*disallow:\s*\/\s*$/im.test(group) : false;
+  const groups = [];
+  let current = null;
+  for (const raw of robots.split(/\r?\n/)) {
+    const m = raw.replace(/#.*/, "").trim().match(/^([a-z-]+)\s*:\s*(.*)$/i);
+    if (!m) continue;
+    const key = m[1].toLowerCase();
+    const value = m[2].trim();
+    if (key === "user-agent") {
+      if (!current || current.rules.length) groups.push((current = { agents: [], rules: [] }));
+      current.agents.push(value.toLowerCase());
+    } else if (current && (key === "allow" || key === "disallow")) current.rules.push([key, value]);
+  }
+  const group = groups.find((g) => g.agents.includes(bot.toLowerCase())) ?? groups.find((g) => g.agents.includes("*"));
+  return group ? group.rules.some(([k, v]) => k === "disallow" && v === "/") : false;
 }
 const aiBots = ["Googlebot", "Bingbot", "GPTBot", "OAI-SearchBot", "ChatGPT-User", "ClaudeBot", "PerplexityBot", "Google-Extended", "CCBot"];
 const blockedBots = robotsTxt.status === 200 ? aiBots.filter((b) => robotsBlocks(robotsTxt.body, b)) : [];

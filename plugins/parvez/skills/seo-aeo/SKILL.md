@@ -1,6 +1,7 @@
 ---
 name: seo-aeo
-description: Audit and improve a website's SEO (search engines) and AEO (answer engines - ChatGPT, Perplexity, Google AI Overviews, Copilot, voice assistants), then prove the result with local tests. Use this whenever the user wants a site, landing page or marketing page to rank better, be found or cited by AI assistants, show correct previews when shared, or asks about meta tags, JSON-LD / schema.org, robots.txt, sitemap.xml, llms.txt, canonical URLs, noindex, prerendering or SSR for crawlers, Core Web Vitals / Lighthouse for a public page, featured snippets, FAQ schema, or "does our site follow this SEO/AEO article". Also use it when the user pastes an SEO or AEO blog post and asks whether the site does what it says. Works on any stack (React/Vite SPA, Next.js, static HTML, CMS) and on a live URL or a local build.
+description: Audits and improves a website's SEO (search engines) and AEO (answer engines - ChatGPT, Perplexity, Google AI Overviews, Copilot, voice assistants), then prove the result with local tests. Use this whenever the user wants a site, landing page or marketing page to rank better, be found or cited by AI assistants, show correct previews when shared, or asks about meta tags, JSON-LD / schema.org, robots.txt, sitemap.xml, llms.txt, canonical URLs, noindex, prerendering or SSR for crawlers, Core Web Vitals / Lighthouse for a public page, featured snippets, FAQ schema, or "does our site follow this SEO/AEO article". Also use it when the user pastes an SEO or AEO blog post and asks whether the site does what it says. Works on any stack (React/Vite SPA, Next.js, static HTML, CMS) and on a live URL or a local build.
+argument-hint: "[url or build-dir]"
 ---
 
 # SEO and AEO: audit, fix, prove
@@ -25,12 +26,11 @@ Crawlers and most answer-engine bots read the **first HTML response**. Many of t
 (GPTBot, ClaudeBot, PerplexityBot, most social preview bots). Google runs JavaScript later, but slowly and
 not always. So the first question is always: what is in the HTML before any script runs?
 
-Run the bundled audit script (`<skill-dir>` is the folder that holds this SKILL.md). It needs Node 18+ and
-nothing else:
+Run the bundled audit script. It needs Node 18+ and nothing else:
 
 ```bash
-node "<skill-dir>/scripts/audit-url.mjs" https://example.com/
-node "<skill-dir>/scripts/audit-url.mjs" http://localhost:4180/ --expect phrases.json
+node "${CLAUDE_SKILL_DIR}/scripts/audit-url.mjs" https://example.com/
+node "${CLAUDE_SKILL_DIR}/scripts/audit-url.mjs" http://localhost:4180/ --expect phrases.json
 ```
 
 It fetches the page as a browser, Googlebot, GPTBot, OAI-SearchBot, PerplexityBot and ClaudeBot and reports:
@@ -117,7 +117,7 @@ text is gzip-compressed so Lighthouse numbers are close to production, and `/noj
 scripts removed:
 
 ```bash
-node "<skill-dir>/scripts/serve-build.mjs" <build-dir> 4180 --app-routes "^(app|dashboard|settings)(/|$)"
+node "${CLAUDE_SKILL_DIR}/scripts/serve-build.mjs" <build-dir> 4180 --app-routes "^(app|dashboard|settings)(/|$)"
 ```
 
 Always compare against the base branch built the same way (`git worktree add` or `git archive` the base

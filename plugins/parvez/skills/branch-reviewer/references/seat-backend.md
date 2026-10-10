@@ -17,7 +17,7 @@ plus repo hygiene on backend assets (build files, IDE config, docs next to code)
 ## Ownership boundary
 
 Backend owns **micro / hygiene**: naming, formatting, DRY within reach, in-file dead blocks, perf
-micro-patterns. Architecture owns **macro / structural**. Full split in `../SKILL.md`.
+micro-patterns. Architecture owns **macro / structural**. Full split in `ownership-split.md`.
 
 ## Severity
 
@@ -102,7 +102,7 @@ you spot one, add a single handover line at the end (`For tests seat: <one line>
 - **Service methods include the subject noun:** `CreateReportAsync`, not `ReportService.CreateAsync`.
 - **Timestamps split by purpose.** Audit fields follow the project's base DTO names; domain event
   timestamps say what happened (`UploadedAt`, `PausedAt`). Do not "correct" one into the other.
-- No storage-layer suffix on a plain foreign key (`scheduleId`, not `scheduleDbId`) unless it must be
+- No storage-layer suffix on a plain foreign key (`orderId`, not `orderDbId`) unless it must be
   told apart from a separate business id in the same scope.
 - Input DTOs follow the project's input-model suffix convention.
 - **No short variable names** (`kvp`, `dt`, `ws`, `ea`). Spell them out, also in `foreach` and `out`
@@ -110,7 +110,7 @@ you spot one, add a single handover line at the end (`For tests seat: <one line>
 - **The name matches the behaviour.** A `*IfRequired` or `Try*` with no condition drops the suffix; an
   `ImportAsync` that only processes is `ProcessAsync`.
 - Singular scalars, plural collections; integer counts end in `Count`. **One term per concept across
-  layers** (Schedule **or** Project, not both).
+  layers** (Customer **or** Client, not both).
 - **No invented vocabulary or cryptic references.** Use the established domain word. A new reader
   understands the names without a glossary.
 - No trailing version letter on folder or project names; versioning lives in the build file.
@@ -213,7 +213,7 @@ you spot one, add a single handover line at the end (`For tests seat: <one line>
 ### 10. Comments
 
 Do not restate code. Document a non-obvious why only, in plain full sentences. No worked-example values
-or ticket history in source. Full rule: **Comment quality** in `../SKILL.md`.
+or ticket history in source. Full rule: **Comment quality** in `comment-quality.md`.
 
 ### 11. Sync, import and delete-by-absence correctness
 
@@ -280,5 +280,5 @@ If a rule is broken once, find every instance and list them in one finding.
 
 ## Comments
 
-Judge every added or edited comment in your files against **Comment quality** in `../SKILL.md`. One
+Judge every added or edited comment in your files against **Comment quality** in `comment-quality.md`. One
 finding per file. A deleted comment that carried a safety reason is `med` / `Required`.

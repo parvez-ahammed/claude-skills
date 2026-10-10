@@ -20,6 +20,8 @@ if not ORG or not PROJECT:
     sys.exit("Set ADO_ORG_URL and ADO_PROJECT.")
 ADO_RESOURCE = "499b84ac-1321-427f-aa17-267ca6975798"  # Azure DevOps app id, the same for every org
 
+if len(sys.argv) < 4:
+    sys.exit(__doc__)
 work_item_id, comment, *files = sys.argv[1:]
 bad = [f for f in files if not pathlib.Path(f).name.startswith(f"{work_item_id}-")]
 if bad:

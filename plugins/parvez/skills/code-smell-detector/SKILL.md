@@ -1,5 +1,6 @@
 ---
 name: code-smell-detector
+argument-hint: "[file, directory, or function]"
 description: Detect code smells in a file, function, or directory and map each to candidate fixes. Use when the user wants to find what is wrong with code, "find code smells", "review this for quality", "what should I clean up here", or as the first step of a vague "refactor this" / "improve this" request. Covers the 22 refactoring.guru smells across five groups (Bloaters, Object-Orientation Abusers, Change Preventers, Dispensables, Couplers). Reports each smell with cited file:line evidence and the candidate refactoring or design pattern it maps to. Spoke of refactoring-guru; usable standalone.
 ---
 
@@ -56,6 +57,7 @@ the actual scoring of a pattern belongs to the pattern spokes.
 | Dead Code | unreachable or never-called code | Delete it |
 | Speculative Generality | abstractions/hooks "for the future" with one user | Collapse Hierarchy, Inline Class, Remove Parameter |
 | Lazy Class | class that does too little to justify itself | Inline Class, Collapse Hierarchy |
+| Data Class | class with only fields + getters/setters; other classes hold its behavior | Encapsulate Field/Collection, Move Method (bring the behavior in) |
 
 ### Couplers (excessive coupling)
 
@@ -65,6 +67,10 @@ the actual scoring of a pattern belongs to the pattern spokes.
 | Inappropriate Intimacy | two classes reach into each other's internals | Move Method/Field, Replace Inheritance with Delegation |
 | Message Chains | `a.getB().getC().getD()` | Hide Delegate; Facade (structural) |
 | Middle Man | class that only delegates to another | Remove Middle Man, Inline |
+
+Also check the one "other" smell refactoring.guru lists outside the five groups:
+Incomplete Library Class (a library lacks a method you need, so call sites work around it)
+-> Introduce Foreign Method / Introduce Local Extension (a wrapper or extension function).
 
 ## Report shape
 
@@ -82,8 +88,14 @@ routes there for scoring. Do not score the pattern yourself.
 
 ## References
 
-- `references/bloaters.md` - deep entries for the most common bloaters.
-- `references/couplers.md` - deep entries for coupling smells (the costliest in layered apps).
+Only two groups have deep reference files; the other three (OO Abusers, Change Preventers,
+Dispensables) are covered by the triage table above, which is enough to detect and route
+them. The full fix mechanics for every group live in `refactoring-methods`.
+
+- `references/bloaters.md` - read when a Bloater is found and you need signs/fix detail
+  (Long Method, Large Class, Long Parameter List, Primitive Obsession, Data Clumps).
+- `references/couplers.md` - read when a Coupler is found (Feature Envy, Inappropriate
+  Intimacy, Message Chains, Middle Man); the costliest group in layered apps.
 
 ## Evals
 

@@ -24,7 +24,11 @@ fi
 
 echo ">>> 2. sshd: key-only, no root, custom port ${SSH_PORT}"
 install -d /etc/ssh/sshd_config.d
-cat > /etc/ssh/sshd_config.d/99-hardening.conf <<EOF
+# sshd keeps the FIRST value it reads for each keyword, and drop-ins load in lexical
+# order. Ubuntu cloud images ship 50-cloud-init.conf with PasswordAuthentication yes,
+# so a 99-* file would silently lose. 00- sorts first and wins.
+rm -f /etc/ssh/sshd_config.d/99-hardening.conf   # name used by older versions of this script
+cat > /etc/ssh/sshd_config.d/00-hardening.conf <<EOF
 Port ${SSH_PORT}
 PasswordAuthentication no
 PermitRootLogin no
@@ -65,6 +69,9 @@ apt-get install -y -qq unattended-upgrades
 echo 'APT::Periodic::Unattended-Upgrade "1";' > /etc/apt/apt.conf.d/20auto-upgrades
 
 # Restart ssh LAST, after the firewall already allows the new port.
+# Validate the config first: a syntax error here would leave sshd unable to start.
+mkdir -p /run/sshd   # sshd -t needs it; absent on socket-activated boxes before first login
+sshd -t || { echo "sshd -t failed; NOT restarting ssh. Fix /etc/ssh/sshd_config.d/00-hardening.conf"; exit 1; }
 echo ">>> restarting ssh on port ${SSH_PORT}"
 systemctl restart ssh 2>/dev/null || systemctl restart sshd 2>/dev/null || true
 systemctl restart ssh.socket 2>/dev/null || true
@@ -76,8 +83,8 @@ DONE. Now, BEFORE closing this session, open a NEW terminal and confirm:
 Then update CI: set GitHub variable VPS_SSH_PORT=${SSH_PORT}, VPS_USER=${DEPLOY_USER}.
 
 OPTIONAL (when behind Cloudflare proxy) - lock the origin to Cloudflare IPs:
-    for ip in \$(curl -s https://www.cloudflare.com/ips-v4); do ufw allow from \$ip to any port 443 proto tcp; ufw allow from \$ip to any port 80 proto tcp; done
-    ufw deny 80/tcp; ufw deny 443/tcp
+    for ip in \$(curl -s https://www.cloudflare.com/ips-v4) \$(curl -s https://www.cloudflare.com/ips-v6); do ufw allow from \$ip to any port 443 proto tcp; ufw allow from \$ip to any port 80 proto tcp; done
+    ufw delete allow 80/tcp; ufw delete allow 443/tcp   # remove the open-to-all rules (a later deny would never match: UFW is first-match)
 And restrict SSH to your IP if static:
     ufw allow from <YOUR_IP> to any port ${SSH_PORT} proto tcp && ufw delete allow ${SSH_PORT}/tcp
 EOF

@@ -1,11 +1,12 @@
 ---
 name: bug-fixer
 description: >-
-  Drive ONE reported bug from report to verified fix, with the root cause proven before any fix is
+  Drives ONE reported bug from report to verified fix, with the root cause proven before any fix is
   written. Use when the user reports a bug, defect, regression, wrong or missing data, a 500, a stack
   trace, "it broke", "it was working yesterday", or hands over a bug ticket and wants it taken
   end-to-end. Triggers on "/bug-fixer", "fix this bug", "why is this broken", "root cause this",
   "this wrote wrong data". One command, one bug, root cause before fix.
+argument-hint: "[bug description | ticket id | error text]"
 ---
 
 # bug-fixer - one command, one bug, root cause first
@@ -78,8 +79,8 @@ digraph bug_fix {
 Trace the code path from the symptom back to the cause. Read **every step**: controller, service,
 mapper, query, transform, client. The step you skip is the step that breaks the claim. Known traps:
 
-- **Tenant / role** - the wrong tenant or role can reach the data; owner-side and partner-side code
-  differ; a global query filter drops rows. Example: in an ORM, eager-loading a required navigation
+- **Tenant / role** - the wrong tenant or role can reach the data; the two sides of a shared record
+  (for example owner and partner, sender and receiver) run different code; a global query filter drops rows. Example: in an ORM, eager-loading a required navigation
   whose target is soft-deletable can silently drop the parent row. Project the columns instead.
 - **Content is not identity** - on wrong or duplicate records, "these are the same object" is a claim
   about content, not identity. Trace the key that is created (id, GUID, primary key) from where it is
@@ -133,7 +134,7 @@ A UI-only fix with no test runner: record the click path you checked instead.
 - Reproduce the **original** scenario and confirm it is gone. This is not optional. If you cannot run
   it, say exactly what the user must check. Never write "this should fix it".
 - **Adjacent hunt:** other callers of the changed method, missing cache or query invalidation, the
-  other side of the operation (sender and receiver, owner and partner), other integrations that share
+  other side of the operation (sender and receiver, owner and shared-with party), other integrations that share
   the path, branches that are now dead.
 - **Judge on the final tree.** A later commit can undo an earlier fix. Re-read the final diff, not your
   memory of the commits.

@@ -1,21 +1,23 @@
 ---
 name: branch-reviewer
 description: >-
-  Multi-seat code review of a branch, a diff or a pull request. Six parallel reviewer seats
-  (backend, frontend, architecture, tests, QA, text) each review against their own rubric, plus a
-  dependency seat that runs only when the diff adds a library and reports its licence, whether it
-  is free for commercial use, and its price. Every finding then goes through a refutation pass, and
-  the result is one severity-ranked punch list plus a self-contained HTML report. Use for "review my
-  PR", "review this branch", "code review", "audit this branch", "what will be flagged", "second
-  opinion on my changes", and equally for "QA this PR", "what should be tested", "what regressions
-  could this cause", "write test cases for this branch". Say `advanced` ("deep review", "full review
-  before PR") for the deep shape: the six seats plus four external rubrics, an adversarial round and
-  an HTML artifact; it also starts on its own for critical work (data sync, migrations, auth,
-  background jobs, destructive paths). Say `comment` ("review PR 123, comment mode") to post the
-  surviving findings as review comments on GitHub, Azure DevOps or GitLab, after an independent agent
-  re-verifies every claim. Use "post these findings to PR 123" when the findings already exist.
-  Use it even on small or "trivial-looking" PRs: many recurring review hits come from PRs the author
-  thought were tiny.
+  Multi-seat code review of a branch, diff or pull request. Six parallel reviewer seats
+  (backend, frontend, architecture, tests, QA, text) review against their own rubrics, plus a
+  dependency seat that runs only when the diff adds a library and reports its licence, commercial-use
+  terms and price. Findings go through a refutation pass and end as one
+  severity-ranked punch list plus a self-contained HTML report. Use for "review my PR", "review this
+  branch", "code review", "audit this branch", "what will be flagged", "second opinion on my
+  changes", "QA this PR", "what should be tested", "what regressions could this cause", "write test
+  cases for this branch". Say `advanced` ("deep review", "full review before PR") for four extra
+  external rubrics, an adversarial round and an HTML artifact; it also starts on its own for critical
+  work (data sync, migrations, auth, background jobs, destructive paths). Say `comment` ("review PR
+  123, comment mode") to post re-verified findings to GitHub, Azure DevOps or GitLab.
+when_to_use: >-
+  Also for "post these findings to PR 123" when the findings already exist (comment-only mode), and
+  for "code review only" or "QA only" passes. Use it even on small or "trivial-looking" PRs: many
+  recurring review hits come from PRs the author thought were tiny. Not for testing a running app
+  (use qa-ux) or for judging whether a shipped feature keeps its promise (use grill-feature).
+argument-hint: "[PR number | branch] [advanced] [comment]"
 ---
 
 # branch-reviewer
@@ -183,47 +185,11 @@ one-line change that alters what a user sees still has consequences and an accep
 
 ## Ownership split (avoid double-flagging)
 
-Backend and architecture read the same server code. This table says who owns what.
-
-| Topic | Backend | Architecture |
-|---|:---:|:---:|
-| Object-mapper formatting and configuration style | x | |
-| "Should this mapping exist at all?" / type-pair sanity | | x |
-| Dead commented-out blocks, unused imports | x | |
-| Comment necessity, language and structure (see **Comment quality**) | x | |
-| Comment volume as a design smell | | x |
-| Unused services, orphan endpoints, unrendered components | | x |
-| DTO field naming, nullability, base-class reuse | x | |
-| DTO existence at a boundary (domain model leak) | | x |
-| Perf micro-pattern (set vs list lookups, bulk update calls) | x | |
-| Perf macro-pattern (filter in the database, allocation strategy) | | x |
-| Method and variable naming, formatting | x | |
-| Service boundaries, single responsibility, public vs internal surface | | x |
-| Business-logic correctness (field meaning, races) | | x |
-| Authorization: who may perform a state change, and on which side | | x |
-| Cardinality: code that assumes the first / primary / only element | | x |
-| Destructive paths: what a delete, overwrite or backfill removes or orphans | | x |
-| Requests an edge firewall or gateway can block | | x |
-
-**Tests are a separate axis.** Anything about whether a change is verified belongs to the tests seat,
-even on code the backend seat also reads. If backend or architecture spots a missing test, they hand
-it over - one finding, attributed to tests.
-
-**QA is a third axis.** Anything about what a user experiences, what the ticket asked for, or what
-breaks in a file the diff never touched belongs to QA:
-
-- a requirement in the ticket with no implementing change (no diff lines exist, so no code seat sees it)
-- a recorded decision in the project's notes that the shipped code contradicts
-- regressions in untouched callers, sibling integrations, other roles, the other party's side
-- stale UI after a mutation, duplicate notifications, dead controls, silent drops
-- the test cases someone must execute before merge
-
-**Text is a fourth axis.** Anything about the words themselves belongs to the text seat. Frontend
-owns how a control looks and behaves; text owns what it says. QA owns whether a message appears at
-the right time; text owns whether it is the right message. A code seat that wants to flag wording
-hands it to text with the `file:line`, and text returns the rewrite.
-
-When one finding maps to two axes (rare): architecture wins, show it once at the higher severity.
+Backend owns micro / hygiene, architecture owns macro / structure. Tests own anything about whether a
+change is verified. QA owns what a user experiences, what the ticket asked for, and what breaks in
+files the diff never touched. Text owns the words. The full table is in
+`references/ownership-split.md`; read it before step 4 (dedupe). When one finding maps to two axes,
+architecture wins, shown once at the higher severity.
 
 ## Output contract - every seat returns this shape
 
@@ -262,87 +228,20 @@ Quantify when the claim is quantitative: "N+1 across ~200 rows adds a round trip
 `low` findings are exempt because formatting has no failure mode - which is also why they never lead
 a report.
 
-### External-system claims need a vendor citation, not an inference (blocking, `high`)
+### Hard rules and severity floors (blocking)
 
-A claim about **something outside this repo** - an external API's filter syntax, its operators, its
-status codes, its paging, its limits, a version floor, a library's contract - cannot be reviewed from
-the codebase. The code shows what we *send*, never what the other end *accepts*.
+Four rules hold whatever the diff size. The full text, with the real failures behind each, is in
+`references/severity-floors.md`; every seat reads it.
 
-The real failure: two independent sub-agents flagged a not-equals operator rendered as `!=` in a REST
-filter builder as a Required fix, because every sibling operator in the same switch used a
-`:eq:` / `:lt:` colon form. The vendor's documentation lists `!=` as the correct not-equals token, and
-no colon form for it exists. The "fix" would have broken every not-equals filter in production.
-Internal symmetry is not evidence about a third party's parser.
-
-- **Verify against the vendor's own documentation** with a web search or fetch. Cite the URL. If you
-  cannot find the vendor's statement, the claim does not ship as a finding.
-- **Working notes are not an authority.** AI-written plans and notes in the repo are leads: use them
-  to find the question and the source URL, then confirm at the source. A note that repeats a vendor
-  claim is how a wrong claim gets turned into a confident one.
-- **A measured result outranks a document.** A recorded response from the live server beats vendor
-  prose, which is often stale (a doc said `200 OK` with an empty body; the server answered
-  `204 No Content`). Re-run the probe if it is cheap.
-- **No citation means it is a Question.** Phrase it "does X accept Y?" and say what would settle it.
-
-To decide whether a claim is internal or external, ask who would have to change for the finding to
-be wrong. If the answer is a vendor, it needs a citation.
-
-### Unit tests are mandatory (hard rule)
-
-**A change in behaviour ships with a unit test in the same PR.** A behaviour change with no test is a
-`high` / **Required** finding and the verdict is **Not ready**, no matter how clean or small the code
-looks. The tests seat owns the judgement; the orchestrator enforces the verdict.
-
-Behaviour change: a new branch, a changed condition, a new method with logic, a changed default, a new
-validation rule, a bug fix, a changed query or serialization, a new integration path, a migration with
-a backfill. Exempt: formatting, naming, comment and dead-code removal, pure moves already covered by a
-test, config and docs, generated code.
-
-These are context lines, never reasons to waive it: "covered by integration tests" (then name the one
-that fails on revert), "the logic is trivial", "too hard to test" (a finding about the code's shape),
-"I tested it manually" (record that *and* add the test), "tests in a follow-up" (file it with an owner
-or do it now), "coverage in that file is already high" (coverage counts lines run, not behaviour
-checked).
-
-**The one exception, which must be declared, never assumed.** If the project rules say a part of the
-codebase has no test suite (common for a frontend), a change there is not blocked for lacking a unit
-test - but it must record what was exercised and how. Silence is not the exception: an untested
-change with no recorded verification is still `high`.
-
-Every report carries the verdict line: `Unit test rule: PASS | FAIL | N/A - <reason>`.
-
-### Severity floor for authorization findings (non-negotiable)
-
-An authorization, permission or isolation gap (between users, accounts, orgs, tenants) is rated on
-**API reachability**, never on UI reachability. These are context lines, never severity reducers:
-
-- "our UI never sends that request" / "the button is hidden" / "the client filters it out"
-- "the flag that gates it is computed correctly elsewhere"
-- "the gap is pre-existing, the diff did not introduce it"
-- "it needs a crafted HTTP request" / "the caller must already be signed in"
-
-A signed-in user with curl is the baseline attacker. Pre-existing **and newly amplified** (new
-endpoint, newly exposed identifier, new fan-out) is worse than pre-existing alone. Put the context in
-the finding body, keep the severity at `high`. A gap that a design doc recorded and deferred is still
-an open gap: cite the doc, do not inherit its verdict.
-
-The inverse error is real too: an authorization concern the server already enforces is a **cleared
-check, not a finding**. Trace the server-side gate before rating.
-
-### Severity floor for silent data loss (non-negotiable)
-
-A path that can delete, void, overwrite or orphan data the user did not ask to lose is floored at
-`high`. Context lines, never reducers: "it only happens if the upstream read fails" (that is the
-case, not the exception), "the row is only soft-deleted" (hiding data a live record points at is data
-loss to the user), "the filter would have to be misconfigured" (a typo is the expected input), "it is
-only one account".
-
-The tell is **deletion by absence**: code that treats "not in this list" as "gone at the source".
-Whatever builds that list is now a data-loss path, and every way it can come back short - a filter, a
-failed page, an exception swallowed into an empty result, a per-item overwrite - is a `high`. Real
-shapes: a catch-all on a read that treated any failure as "fresh destination" and overwrote an
-existing file; a soft-delete of fields that a live configuration still referenced; a migration that
-backfilled every existing account into an active auto-delete policy. Architecture owns these.
+- **External-system claims need a vendor citation.** A claim about a third party's syntax, operators,
+  status codes, limits or contract cites the vendor's own documentation, or it is a Question.
+  Internal symmetry says nothing about someone else's parser.
+- **Unit tests are mandatory.** A behaviour change with no test in the same PR is `high` / Required
+  and the verdict is **Not ready**. Every report carries `Unit test rule: PASS | FAIL | N/A - <reason>`.
+- **Authorization gaps are floored at `high`**, rated on API reachability, never UI reachability.
+  "The UI hides it" and "it is pre-existing" are context lines, never reducers.
+- **Silent data loss is floored at `high`.** The tell is deletion by absence: code that treats "not in
+  this list" as "gone at the source".
 
 ## Compile gate - run it, do not reason about it (blocking, `high`)
 
@@ -368,18 +267,10 @@ changed paths and say which commands you chose.
 ## Verification review - what did the author actually run? (blocking, `high`)
 
 The compile gate proves *you* can build it. This asks what *the author* verified. A reviewer who only
-reads code accepts the author's verification as given, and that is how "it compiles" reaches QA.
-
-The tests seat answers these and returns them; the orchestrator carries them into the summary
-without re-deriving them. Each unanswered one is a `high`:
-
-- **Which test fails if this PR is reverted?** Name it, `file:line`. If the honest answer is "none",
-  say so - it is the most useful line in the report.
-- **Does the diff touch a migration, an integration, or a shared service with no test change?** Say it.
-- **For UI changes: was the flow exercised, or only read?** A screenshot, a recorded click path, or
-  an honest "not run".
-- **Do the tests check behaviour or mocks?** At least one assertion on a real output.
-- **Does every bug fix have a regression test?**
+reads code accepts the author's verification as given, and that is how "it compiles" reaches QA. The
+tests seat answers five questions (listed in `references/severity-floors.md`, the first being "which
+test fails if this PR is reverted?") and the orchestrator carries the answers into the summary
+without re-deriving them. Each unanswered one is a `high`.
 
 ```
 Unit test rule: PASS | FAIL | N/A - <reason>
@@ -409,61 +300,10 @@ reached you from an earlier verifier, re-read the source yourself; do not re-rea
 
 ## Comment quality - every seat judges the comments in its own files
 
-There is no comment seat: a comment can only be judged next to the code it sits above. Judge every
-added or edited comment on three axes.
-
-### 1. Necessity - does this comment earn its line?
-
-Default: write the code, no comment. A comment is justified only when it carries something the code
-cannot: a non-obvious **why** or a rejected alternative that looks correct; a **trap** the next reader
-would fall into; a **cross-file invariant** the compiler does not enforce.
-
-Flag as `low` / `Nit`, or `med` / `Consider` when the volume is systemic:
-
-| Pattern | Why it fails |
-|---|---|
-| Restates the member name | The signature already said it |
-| Walks the happy path line by line | The code is the walkthrough |
-| Defends a design decision at length | Belongs in the PR description or commit body |
-| The same two sentences repeated across sibling files | Put it once on the base class or interface |
-| Added "for consistency" because neighbours have one | Consistency is not a reason |
-| Longer than the code it guards | A design note in the wrong place |
-
-**Reach for a name before a comment.** If a rename, an extracted local or an extracted private
-method removes the need, the finding is the weak name. `FoldsIntoModified(profile)` needs no comment;
-`ChildAction(profile, x)` does.
-
-The reverse is a more expensive finding: **a deleted comment that carried a safety reason**. When a
-diff removes a comment, ask what the next reader loses. A comment that records why an unsafe-looking
-choice is safe today, and what would make it unsafe, is the one kind a trimming pass must keep.
-Report its removal at `med` / `Required`.
-
-### 2. Language - Simplified Technical English (ASD-STE100)
-
-- Active voice, present tense.
-- One idea per sentence. Twenty words or fewer for an instruction, twenty-five for a description.
-- One word, one meaning. Do not call one thing a row, a record and an entry in the same file.
-- Simple concrete words: "use", not "utilise"; "before", not "prior to".
-- No noun stacks longer than three words.
-- Keep the articles.
-- No metaphor, jokes, slang or idiom. They do not survive translation or a decade.
-- Plain ASCII punctuation: no em dash, en dash, curly quote, ellipsis or arrow character.
-- No jargon a new team member would have to ask about. Say what the code does, in verbs.
-
-### 3. Structure
-
-- Written for **a maintainer changing this file next year**. They need the trap, not the journey.
-- **Hard cap: one or two lines**, except a file-header or class-level contract note.
-- Directly above what it explains.
-- No AI tells: no "Note that...", no "This is important because...", no numbered narration, no
-  restating the ticket.
-- No stale comment: if the diff changed the behaviour and left the comment describing the old one,
-  that is `med` / `Required`. A wrong comment is worse than none.
-- No commented-out code. Git has it.
-
-Applies to test files too. **Group comment findings**: one per file, or one per pattern across files,
-with the worst two or three lines cited. If comment volume is the finding, say so as one `med` with
-the ratio ("24 comment lines on 96 lines of code") and name which comments to keep.
+There is no comment seat: a comment can only be judged next to the code it sits above. Every seat
+judges each added or edited comment on necessity, language (Simplified Technical English) and
+structure, with `references/comment-quality.md`. Comment findings are grouped per file, never one
+per line. A deleted comment that carried a safety reason is `med` / `Required`.
 
 ## Effort levels
 
@@ -500,8 +340,8 @@ are correct-looking lines whose context the diff does not show. Before judging t
    file written per item to one key, an id taken from the primary. For each, state the two-element
    scenario that breaks it and whether a test covers it. "It loops" is not an answer; read what the
    loop body writes *to*. This is the most expensive miss class in practice: one feature was reopened
-   three times running because each fix handled one more object type (resources, then calendars,
-   then structures) and nobody wrote the list down.
+   three times running because each fix handled one more object type (the first type, then a
+   second, then a third) and nobody wrote the list down.
 7. **Verify every external-system claim against vendor documentation** before writing it as a
    finding, and cite the URL. "Every sibling uses this form, so this one is wrong" is a Question.
 8. **Apply the simplification lens.** Could a reframing delete a whole branch, helper layer or kind
@@ -519,10 +359,10 @@ the diff reproduces the author's blind spots.
 
 0. **Confirm the seat rubrics exist before promising a review.** A clean punch list from seats that
    never ran is worse than no review, because it reads as coverage. Resolve this skill's directory
-   (the folder that holds this `SKILL.md`) to an absolute path and check:
+   to an absolute path (`${CLAUDE_SKILL_DIR}`, or the folder that holds this `SKILL.md`) and check:
 
    ```bash
-   SKILL_DIR="<absolute path of this skill's folder>"
+   SKILL_DIR="${CLAUDE_SKILL_DIR}"   # if empty: the absolute path of the folder holding this SKILL.md
    for s in seat-architecture seat-backend seat-frontend seat-tests seat-qa seat-text seat-dependency-licence; do
      test -s "$SKILL_DIR/references/$s.md" || echo "MISSING SEAT: $s"
    done
@@ -549,60 +389,13 @@ the diff reproduces the author's blind spots.
 
 3. **Spawn the seats in parallel - one assistant message, several `Agent` calls.** Start the builds in
    the same message. Paste the full **Investigation method** into each prompt (sub-agents see only
-   what you pass them). Each prompt:
+   what you pass them). Read `references/seat-prompts.md` for the base seat prompt and the extra
+   lines for the QA and text seats. Every seat reads its own rubric by absolute path, plus the
+   project rules, `references/severity-floors.md`, `references/ownership-split.md` and
+   `references/comment-quality.md`. Seats are stateless, so never run them one after another:
+   wall-clock time is the slowest seat, not the sum.
 
-   ```
-   Read the reviewer rubric at <SKILL_DIR>/references/<seat>.md and review the diff
-   <base>...HEAD against it. That file IS your rubric - read it before judging anything.
-   Project rules to read first, they override the rubric: <paths, or "none found">.
-   (Tests seat: the unit-test hard rule is blocking. Return the
-   `Unit test rule: PASS | FAIL | N/A - <reason>` line first.)
-   Diff name-status (already classified, do not redo): <paste>
-   Investigation method (follow before judging changed lines): <paste all 9 points>
-
-   You have WebSearch and WebFetch. Any claim about an external system or library - syntax,
-   operators, status codes, paging, limits, version floors - must be checked against the
-   vendor's own documentation and the URL cited. Do not infer a third party's contract from
-   this repo's internal consistency. Uncited external claims go under Questions.
-   Output: STRICTLY the orchestrator's contract - Severity / Action / Issue / Failure / Fix.
-   A finding without a concrete Failure line is a Question.
-   Rank by severity; never drop a high or med to stay brief. Skip low nits if long.
-
-   Read-only: do not change the working tree, the index, HEAD or branch state. Use git show,
-   git diff, git log. For another revision, `git worktree add` a temp dir. The orchestrator
-   runs the builds; you do not.
-
-   Do not dispatch subagents. You are one seat and you review your whole scope yourself. If
-   the scope is too large for one pass, do several passes and say so.
-   ```
-
-   **Extra lines for the QA seat:**
-
-   ```
-   Retrieve the ticket and its comments with the project's tracker tool (see project rules:
-   gh issue view, az boards work-item show, a Jira or Linear CLI or MCP server). The acceptance
-   criteria are what you grade coverage against. If the project keeps working notes (plans,
-   decisions) in a folder, read them; if that folder is gitignored, ripgrep skips it, so use
-   `rg --no-ignore` or `grep -rn`. Diff each recorded decision against what the commit does - a
-   shipped change that contradicts a decision is a `high` and no code seat can see it.
-   Number findings Q-1, Q-2, ... The orchestrator runs the adversarial pass; you do not.
-   Return, in order: impact map, requirement coverage, findings, test cases, what you could
-   not reach.
-   ```
-
-   **Extra lines for the text seat:**
-
-   ```
-   Your scope is every string a human reads. Read each changed string in its rendered context
-   - open the component, the resource file, the email template - because a label judged
-   without its control is judged blind. Grep the repo for the existing term before proposing
-   a new one; one concept, one word. Every finding carries the literal before -> after
-   rewrite; a text finding without a rewrite is a Question. Return the
-   `Text: PASS | FAIL - <reason>` line first, then findings, then the rewrite table as
-   `file:line | before | after`.
-   ```
-
-   **The dependency seat** gets the base prompt plus the list of added packages per manifest and the
+   The **dependency seat** gets the base prompt plus the list of added packages per manifest and the
    project's distribution model from the project rules (closed-source SaaS, installed app, open
    source library). Without it, assume closed-source commercial software shipped to customers and
    say so.
@@ -617,47 +410,19 @@ the diff reproduces the author's blind spots.
 
 5. **Adversarial pass on the QA and text findings.** These two seats reason about consequences and
    readers rather than lines, so they are the most exposed to a confident error. Spawn **one fresh
-   agent with no prior context** and give it the name-status diff, the acceptance criteria, the
-   numbered `Q-n` findings, every `high` text finding with its rewrite, and:
-
-   ```
-   Two jobs, in order.
-
-   1. REFUTE. For each numbered finding, try to prove it wrong. Open the files. A finding
-      survives only if you trace the failing path end to end yourself. Return for each:
-      CONFIRMED (cite file:line) / REFUTED (cite what disproves it) / UNPROVEN (name the
-      step you could not verify). Default to REFUTED when the evidence is ambiguous.
-   2. FIND WHAT WAS MISSED. Assume the first reviewer anchored on the changed files and the
-      happy path. Look at: the untouched analogue branch (other integration, other party,
-      other role), the second run of every create/persist flow, the second element of every
-      collection, and the destructive path (delete / overwrite / cancel / rollback).
-
-   Return findings in the Severity / Action / Issue / Failure / Fix shape. Do not restate
-   confirmed findings as new ones.
-
-   For text findings, judge the REWRITE as well as the complaint. A rewrite that is longer
-   than its control, invents a term the app does not use, is wrong about what the code does,
-   or reads as marketing is REFUTED even when the complaint was fair - say which half failed
-   and propose the shorter true string.
-   ```
+   agent with no prior context** with the adversarial prompt in `references/seat-prompts.md`. It
+   refutes each numbered finding, looks for what the seats missed (the untouched analogue branch, the
+   second run, the second element, the destructive path), and judges each text rewrite as well as
+   the complaint.
 
    Merge honestly. REFUTED findings are **dropped**, with a one-line note in the report saying what
    disproved them - that tells the reader the report was checked. UNPROVEN drops to Hypothesis and
    never leads. New adversary findings join the list. When the adversary is right and you were wrong,
    say so plainly.
 
-6. **Write the HTML report.** Copy `assets/report-template.html` to the report folder from the project
-   rules, or by default `.reviews/<branch>/review.html` (suggest adding `.reviews/` to `.gitignore`).
-   Fill the placeholders: `{{REF}} {{TITLE}} {{DATE}} {{BASE}} {{HEAD}} {{FILE_COUNT}}`,
-   `{{SUMMARY_PARAGRAPH}}`, `{{IMPACT_ROWS}}`, `{{COVERAGE_ROWS}}`, `{{FINDINGS}}`,
-   `{{N_HIGH}} {{N_MED}} {{N_LOW}} {{N_TESTS}}`, `{{REFUTED}}`, `{{TEST_CASES}}`, `{{FOOTER_LIST}}`,
-   and delete the snippet comment at the end.
-
-   `{{FINDINGS}}` carries code, QA **and** text findings as one ranked list. Append the text seat's
-   rewrite table as its own block at the end, so the author applies every string change in one pass.
-   The template is self-contained (inline CSS and JS, no CDN) because the file gets opened from disk
-   and mailed around; keep it that way. Skip this step in `code-only` mode. Open the report for the
-   user when done.
+6. **Write the HTML report** from `assets/report-template.html`, as `references/report-output.md`
+   describes (default location `.reviews/<branch>/review.html`). Skip this step in `code-only` mode.
+   Open the report for the user when done.
 
 7. **Return the punch list.** Order by leverage, not by file: correctness and data loss, then
    security, then structure, then missed simplifications, then the rest. A report that opens with
@@ -683,7 +448,9 @@ the diff reproduces the author's blind spots.
    (link to the product owner question), or `deferred` (follow-up issue). A PR should not leave draft
    while a `med` or higher finding has no state. A report that stays on the local disk closes nothing.
 
-8. **Append the blind-spot footer** (below), tailored to the diff.
+8. **Append the blind-spot footer** from `references/report-output.md`, tailored to the diff: this is
+   a static review, so name what it cannot see (run-only behaviour, missing requirements, edge
+   firewall).
 
 9. **Comment mode only - post the survivors.** Stop and re-read the punch list first: you are about to
    write on someone else's work. Read `references/commenting.md` and follow it. It carries the 90%
@@ -698,79 +465,12 @@ the diff reproduces the author's blind spots.
    The flow confirms with the user before anything is posted. Do not pre-approve on their behalf. In
    every other mode, stop at step 8. Never post to a PR unless the user asked for comment mode.
 
-## Blind-spot footer - append to every report
+## Rationalizations and disagreements
 
-This is a **static diff review**. It does not run the app and cannot see code that was never written.
-Emit a short trailing block titled `Not covered by static review (verify separately):` with the bullets
-that apply:
-
-- **Run-only behaviour** - duplicate notifications, dead click areas, stale screens, two-click flows,
-  visual issues. Exercise the touched flow before merge (a manual walkthrough, or the `qa-ux` skill
-  against the running app). Some of these are catchable statically once the global contract is known
-  (duplicate error toast, missing cache invalidation) and the seats flag those, but confirm by running.
-- **Missing requirements** - a case simply not implemented. A diff reviewer reviews lines that exist.
-  Map each requirement to a change and a verification at plan time.
-- **Edge firewall or gateway** (only when the diff changes an upload, a query parameter, a cookie, a
-  request method or a body size, and the project sits behind a WAF or gateway) - local runs usually
-  have no WAF, so a block shows only in a deployed environment. Run the flow from each client there
-  and read the firewall log before release.
-
-Drop the UI bullet on a pure-backend PR; drop the firewall bullet when no request shape changed.
-
-## Parallel execution rules
-
-- Seats are stateless - never run them one after another.
-- Wall-clock time = the slowest seat, not the sum.
-- Do not pre-rank seats; they share no state and cannot yield to each other.
-
-## Worked example
-
-```
-M  src/Api/Permissions/ReportAccessPolicy.cs
-M  src/Domain/Accounts/ApiKey.cs
-M  web/src/features/files/FilesTab.tsx
-A  web/src/features/files/UploadFailureAlert.tsx
-```
-
-Routing: backend (server code), frontend (`web/`), architecture, tests and QA always; text (the new
-alert has user-visible strings). No manifest changed, so no dependency seat. Six `Agent` calls in one
-message, builds started in the same message.
-
-```
-Summary: 7 findings - 1 high, 4 med, 2 low. 4 files. Seats: backend, frontend, architecture,
-tests, QA, text. Project rules: .claude/review-rules.md. Build: api OK, web not run (project rules).
-Unit test rule: FAIL - ReportAccessPolicy change has no test.
-
-### [Severity: high] [Action: Required] src/Api/Permissions/ReportAccessPolicy.cs:42
-**Issue:** The check verifies the organisation only; the user id is never checked.
-**Failure:** User B in the same organisation calls GET /reports/{id} for user A's private
-report -> 200 with A's data.
-**Fix:** Check the report owner's user id before the organisation match.
-```
-
-## Rationalizations this review does not accept
-
-Applies to the reviewer's own reasoning as much as the author's.
-
-| Rationalization | Reality |
-|---|---|
-| "It compiles / tests pass, so it is fine" | Necessary, not sufficient. They say nothing about the second element, the destructive path, or the requirement nobody implemented. |
-| "The logic is trivial, no test needed" | The test rule has no size threshold. Trivial logic is what a one-line test pins cheapest. |
-| "There are tests in that area" | Name the one that fails if this PR is reverted. |
-| "AI wrote it, it is probably fine" | AI code needs **more** scrutiny. It is confident and plausible exactly where it is wrong. |
-| "It is a small diff" | Small diffs still bolt a branch onto a shared path and still push a file past its size. |
-| "The refactor makes it cleaner" | Moving complexity is not reducing it. Look for a branch that disappeared. |
-| "It is pre-existing" | Never a reducer for authorization or data loss. Pre-existing and newly amplified is worse. |
-| "I will clean it up later" | File it with an owner, or do it now. An unowned later is a no. |
-| "The UI prevents it" | Presentation is not enforcement. One curl away. |
-| "I will read the diff myself instead of dispatching seats" | You are the orchestrator. Reading inline burns the context you need to merge, dedupe and verify. |
-| "It is only a label" | The label is what the user acts on, and persisted or API-visible names outlive the sprint. |
-| "Everyone here understands the wording" | Everyone here wrote it. The reader never saw the code. |
-| "Risky area, but the diff looks clean - standard is enough" | Criticality is about what the code touches, not how the diff reads. |
-| "LGTM" | Not a review. If there is nothing, say what you checked and found sound, by name. |
-| "Every sibling uses that form, so this one is wrong" | Internal symmetry says nothing about a third party's parser. Cite the vendor or ask. |
-| "The notes say so" | AI-written notes are leads, not citations. |
-| "The last verifier cleared it" | A clearance is a claim too. Re-read the source. |
+`references/review-discipline.md` lists the rationalizations this review does not accept (they apply
+to the reviewer's own reasoning as much as the author's) and the order that settles a disagreement:
+facts and measurements, then the project rules, then engineering principle, then consistency with
+surrounding code. Read it before writing the verdict, and whenever the author pushes back.
 
 ## Honesty rules
 
@@ -781,19 +481,6 @@ Applies to the reviewer's own reasoning as much as the author's.
   one step unread".
 - **Accept an override gracefully** when the author has context you lack. Record it and do not
   re-argue next round - but still re-check an "accepted" item against the source each round.
-
-## Disagreement hierarchy
-
-1. **Technical facts and measurements** beat opinions, on both sides. A benchmark ends a perf
-   argument; a repro ends a correctness one.
-2. **The project rules** are the authority on style and convention - not the reviewer's taste, not
-   the author's. If a rule is wrong, change the rules file.
-3. **Design questions** are judged on engineering principle, with the smaller shape favoured.
-4. **Consistency with surrounding code** wins ties, if it does not degrade health.
-
-Justified pushback is fine. Seats and reviewers defend with reasoning (a perf rule waived only with a
-measurement, a mapping exception where shared properties are intended). Do not silently change a
-finding without engaging the question.
 
 ## Reference map
 
@@ -810,5 +497,12 @@ finding without engaging the question.
 - `references/advanced-mode.md` - deep mode phases, adversarial protocol, artifact spec.
 - `references/external-rubrics.md` - the four external rubrics, pasted verbatim into agents.
 - `references/commenting.md` - comment mode: gates, format, voice, GitHub / Azure DevOps / GitLab.
+- `references/severity-floors.md` - vendor citations, the unit-test rule, authorization and data-loss
+  floors, the verification questions. Every seat reads it.
+- `references/ownership-split.md` - who reports what; read before dedupe. Every seat reads it.
+- `references/comment-quality.md` - how every seat judges code comments.
+- `references/seat-prompts.md` - seat and adversarial prompt templates, plus a worked example (step 3).
+- `references/report-output.md` - filling the HTML report and the blind-spot footer (steps 6 and 8).
+- `references/review-discipline.md` - rejected rationalizations and the disagreement hierarchy.
 - `assets/report-template.html` - the self-contained HTML report.
 - `assets/review-rules.template.md` - starting point for a project's `.claude/review-rules.md`.

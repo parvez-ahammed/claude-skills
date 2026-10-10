@@ -17,8 +17,8 @@ persisted enum display name survives forever.
 hurts a real reader**, and gives a **concrete before -> after rewrite**.
 
 - Rejected: "Improve the wording here." / "Make the message clearer."
-- Accepted: "`SyncWizard.tsx:212` - button reads `Execute Transfer Configuration`. A user cannot tell
-  whether this sends their data or saves a setting, so they hesitate. Rewrite: `Start transfer`."
+- Accepted: "`SetupWizard.tsx:212` - button reads `Execute Export Configuration`. A user cannot tell
+  whether this sends their data or saves a setting, so they hesitate. Rewrite: `Start export`."
 
 If you write "improve", "enhance", "clarify" or "make it better" without the replacement string on the
 same line, delete the finding and write the rewrite instead.

@@ -9,7 +9,7 @@ then write the report. Every case has evidence: a command output file, a screens
 2. Build the base branch the same way: `git worktree add ../base <base-branch>` (or `git archive
    <base> | tar -x -C base-src`), install, build.
 3. Serve each build on its own port with the bundled server:
-   `node "<skill-dir>/scripts/serve-build.mjs" <build-dir> 4180 --app-routes "<regex>"`
+   `node "${CLAUDE_SKILL_DIR}/scripts/serve-build.mjs" <build-dir> 4180 --app-routes "<regex>"`
    (base on 4181). It is not the real host - say so in the report.
 4. Browser: Playwright (Chromium). For no-JavaScript cases use a context with `javaScriptEnabled: false`,
    or open `/nojs` on the bundled server.

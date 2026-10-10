@@ -77,3 +77,6 @@ call is simpler: veto Command as needless indirection.
   Command answers "do X, and let me store/undo/queue that request".
 - Observer vs Mediator: Observer is one-to-many notification; Mediator centralizes
   many-to-many coordination.
+- Chain of Responsibility vs Decorator: same linked-wrapper shape. A chain handler may stop
+  the request and not pass it on; a decorator always forwards to the wrapped object and only
+  adds behavior around it. Question: "may a link end the request?" yes -> Chain.

@@ -1,5 +1,6 @@
 ---
 name: creational-patterns
+argument-hint: "[file or symbol]"
 description: Score whether a creational design pattern (Factory Method, Abstract Factory, Builder, Prototype, Singleton) fits a code site, and recommend it only when scored preconditions are met. Use when the user asks "should I use a factory/builder here", "where can I apply a creational pattern", "how should I construct these objects", or when object construction is awkward (telescoping constructors, scattered `new`, type-switch instantiation, expensive clones, hand-rolled globals). Each pattern has opportunity signatures, weighted preconditions, a threshold, and hard-veto anti-indicators; emits APPLY / CONSIDER / REJECT with cited evidence. Spoke of refactoring-guru; usable standalone.
 ---
 
@@ -9,9 +10,10 @@ Creational patterns are about object construction: making the system independent
 objects are created. You score a code site against each candidate and report a verdict. You
 do not edit code.
 
-Use the shared scoring rules in `refactoring-guru/references/verdict-format.md`: match
-preconditions only with cited `file:line` evidence, hard-veto wins, three verdicts, apply
-language notes last. When the user points at a site, score it. When asked "where can I apply
+Use the shared scoring rules in `${CLAUDE_SKILL_DIR}/../refactoring-guru/references/verdict-format.md`
+(bundled with the refactoring-guru skill): match preconditions only with cited `file:line`
+evidence, hard-veto wins, three verdicts (APPLY at threshold with the anchor met, CONSIDER
+for a near-miss or when cost outweighs the problem, else REJECT), apply language notes last. When the user points at a site, score it. When asked "where can I apply
 one", run the opportunity signatures over the target first (or ask code-smell-detector to),
 then score the hits.
 

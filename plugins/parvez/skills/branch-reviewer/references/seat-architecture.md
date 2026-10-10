@@ -20,7 +20,7 @@ against the code.
 
 Architecture owns **macro / structural**: *whether* a thing should exist and *where* it lives. The
 backend seat owns **micro / hygiene**: *how* an existing thing is named, formatted or written. Full
-split in `../SKILL.md`.
+split in `ownership-split.md`.
 
 ## Severity
 
@@ -32,7 +32,7 @@ Architecture rates higher than the per-stack seats:
 - **low** - convention drift.
 
 **Authorization findings are floored at `high`** and rated on API reachability, never UI
-reachability. Full rule in `../SKILL.md`.
+reachability. Full rule in `severity-floors.md`.
 
 ## What to flag
 
@@ -80,8 +80,8 @@ should be smaller.
   scheduled a year ago ran just now. Pick the field that means what the label says.
 - **Build explicit counter-examples as tables** when raising one:
   ```
-  Id | Created          | Scheduled        | Upload  | Download
-  50 | 2026-05-03 12:00 | 2025-05-03 17:00 | Success | ...
+  Id | Created          | Scheduled        | Ran at           | Result
+  50 | 2026-05-03 12:00 | 2025-05-03 17:00 | 2026-05-03 12:05 | Success
   ```
 - **Messaging that depends on the parties.** Wording for "same organisation" vs "another
   organisation" must differ when the product has both.
@@ -124,7 +124,7 @@ These ship to production and need hotfixes. They are invisible if you read only 
 - **Bulk vs single mismatch.** A method written to process *all* items in one pass often has
   batch-wide assumptions: a shared counter, "assign the same id to everything", one transaction over
   the set. Called per item, those break silently. Real shape: a persist routine built for "all
-  schedules at once" was reused for one schedule, and every schedule got the same group id `1`.
+  orders at once" was reused for one order, and every order got the same batch id `1`.
 - **Logic for one integration reused for another.** Deleting records of type A by calling the delete
   path built for type B; an endpoint for A querying B's tables. Each integration's invariants and data
   shape differ.
@@ -294,5 +294,5 @@ If a problem appears once, find every instance and list them in one finding.
 
 ## Comments
 
-Judge every added or edited comment in your files against **Comment quality** in `../SKILL.md`. Group
+Judge every added or edited comment in your files against **Comment quality** in `comment-quality.md`. Group
 into one finding per file. A deleted comment that carried a safety reason is `med` / `Required`.

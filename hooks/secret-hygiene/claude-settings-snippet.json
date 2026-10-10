@@ -1,5 +1,5 @@
 {
-  "//": "Optional: wire secret-hygiene as a Claude Code PreToolUse hook so Claude's own git commits are scanned even in repos without the git pre-commit hook installed. Add this under \"hooks\" in ~/.claude/settings.json (or a project .claude/settings.json). The matcher fires on Bash; the command runs only when the bash command is a git commit, scans staged changes via the same pre-commit script, and a non-zero exit blocks the tool call. Adjust the path to where you cloned this repo.",
+  "//": "Optional: wire secret-hygiene as a Claude Code PreToolUse hook so Claude's own git commits are scanned even in repos without the git pre-commit hook installed. Add this under \"hooks\" in ~/.claude/settings.json (or a project .claude/settings.json). The matcher fires on Bash; the command runs only when the bash command is a git commit, scans staged changes via the same pre-commit script, and a failed scan exits 2, which is the exit code that makes Claude Code block the tool call (exit 1 is only a warning). Adjust the path to where you cloned this repo.",
   "hooks": {
     "PreToolUse": [
       {
@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in *\"git commit\"*) bash /path/to/claude-skills/hooks/secret-hygiene/pre-commit ;; *) exit 0 ;; esac"
+            "command": "cmd=$(jq -r '.tool_input.command // \"\"'); case \"$cmd\" in *\"git commit\"*) bash /path/to/claude-skills/hooks/secret-hygiene/pre-commit 1>&2 || exit 2 ;; *) exit 0 ;; esac"
           }
         ]
       }

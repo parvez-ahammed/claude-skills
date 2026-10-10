@@ -3,7 +3,7 @@
 The layout matters less than making the **dependency direction enforceable** in that
 ecosystem. Each stack below: the folders, and the mechanism that stops an inward layer
 from referencing an outward one. Start with Domain + the ports, wire adapters at one
-composition root, then add the guard (`scripts/check-layering.ps1` + a `clean-arch.json`).
+composition root, then add the guard (`${CLAUDE_SKILL_DIR}/scripts/check-layering.ps1` + a `clean-arch.json`).
 
 ## .NET (project references enforce the DAG)
 
@@ -37,7 +37,7 @@ src/
 
 Enforce with **eslint-plugin-boundaries** (or `import/no-restricted-paths`): declare each
 folder as an element type and the allowed imports, e.g. `domain` may import nothing,
-`application` may import `domain`. Pair with `scripts/check-layering.ps1` for CI.
+`application` may import `domain`. Pair with the bundled `check-layering.ps1` for CI.
 
 ## Java / Kotlin (Gradle modules)
 
@@ -86,7 +86,8 @@ Use `Protocol`/ABC ports in domain/application; `import-linter` contracts enforc
 
 ## After bootstrap
 
-1. Copy `assets/clean-arch.json`, set `roots` to your layer folders and `forbidden` to
+1. Copy `${CLAUDE_SKILL_DIR}/assets/clean-arch.json`, set `roots` to your layer folders and `forbidden` to
    the frameworks/SDKs/outer-layer names each inner layer must not import.
-2. `pwsh -File scripts/check-layering.ps1 -Config clean-arch.json` - confirm green.
+2. `pwsh -File "${CLAUDE_SKILL_DIR}/scripts/check-layering.ps1" -Config clean-arch.json` - confirm green.
+   In CI, commit a copy of the script into the repo (the skill folder is not there).
 3. Add it to CI and a pre-commit hook so the boundary is enforced on every change.

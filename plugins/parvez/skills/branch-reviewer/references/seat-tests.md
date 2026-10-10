@@ -171,5 +171,5 @@ If a test-quality problem appears once, find every instance and list them in one
 
 ## Comments
 
-Judge every added or edited comment in test files against **Comment quality** in `../SKILL.md`: a
+Judge every added or edited comment in test files against **Comment quality** in `comment-quality.md`: a
 one-line why on a non-obvious arrangement, never a paragraph. One finding per file.

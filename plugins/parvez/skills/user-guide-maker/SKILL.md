@@ -8,6 +8,7 @@ description: >-
   "end-user docs for this feature", wants such a guide as HTML or PDF, wants it attached to the
   ticket, or asks to update, re-verify or re-attach a guide after the code changed - even if they do
   not say "skill".
+argument-hint: "[ticket-id or PR number]"
 ---
 
 # User guide maker
@@ -27,7 +28,7 @@ places, and users trust it).
 
 ## The format is fixed
 
-Copy `assets/example-guide.html` (fictional product "Acme Tasks"). Keep its CSS, header chips,
+Copy `${CLAUDE_SKILL_DIR}/assets/example-guide.html` (fictional product "Acme Tasks"). Keep its CSS, header chips,
 "In one line" box, section order, flow diagrams, term list, field/column table, message rows,
 limitations, known behaviours, footer and the `@media print` block. Replace only the content.
 Do not design a new look and do not ask the user which format to use. Delete a section that does
@@ -45,7 +46,7 @@ open it - who sees what - fields or columns - messages - limitations - known beh
    ticket text and comments, and the PR threads. Copy every label, menu path, role, column, message
    text and limit from the source file. Notes, specs and chat history are hints, never proof.
 2. **Write** the guide inside the repo, in a folder the team uses for working files (for example
-   `docs/guides/` or a git-ignored `ai/<ticket>/`), as `<ticket>-<Feature>-User-Guide.html`. The
+   `docs/guides/` or a git-ignored working folder such as `.work/<ticket>/`), as `<ticket>-<Feature>-User-Guide.html`. The
    file name becomes the attachment name on the ticket, so never a generic name like `guide.html`.
    - Plain words, short active sentences, ASCII only. If the `plain-writer` skill is installed,
      load it first.
@@ -61,7 +62,7 @@ open it - who sees what - fields or columns - messages - limitations - known beh
    the guide contradicts itself. The agent that wrote the guide never verifies it.
 4. **Apply every fix.** Then grep the guide for each old wrong phrase (a bulk rewrite often leaves
    one copy behind), and check for non-ASCII: `grep -cP '[^\x00-\x7F]' <guide>.html` must print 0.
-5. **PDF:** `python scripts/make_pdf.py <guide>.html <guide>.pdf` (same base name). Read two or
+5. **PDF:** `python "${CLAUDE_SKILL_DIR}/scripts/make_pdf.py" <guide>.html <guide>.pdf` (same base name). Read two or
    three of the preview PNGs it writes. A page flagged `<-- check` usually has a heading left
    alone at the bottom or a card pushed to the next page: adjust `break-inside` / `break-after`
    in the print block and run again. Delete the previews afterwards.
@@ -75,7 +76,7 @@ open it - who sees what - fields or columns - messages - limitations - known beh
 Pick the tracker the project uses. All of them: attach both the HTML and the PDF, and post one
 short comment that says what the guide covers.
 
-- **Azure DevOps work item:** `python scripts/attach_azure_devops.py <id> "<comment>" <html> <pdf>`
+- **Azure DevOps work item:** `python "${CLAUDE_SKILL_DIR}/scripts/attach_azure_devops.py" <id> "<comment>" <html> <pdf>`
   with `ADO_ORG_URL` and `ADO_PROJECT` set; uses `az login`. It replaces same-named attachments and
   refuses a file whose name does not start with `<id>-`.
 - **Jira issue:** `curl -u "$JIRA_USER:$JIRA_TOKEN" -H "X-Atlassian-Token: no-check"
@@ -110,6 +111,9 @@ copy on the ticket does not update itself.
 | Guide still shows a removed message or limit | Grep for the old text after every code change |
 
 ## Reference map
+
+Paths are relative to this skill's folder (`${CLAUDE_SKILL_DIR}`).
+
 
 - `assets/example-guide.html` - the format to copy (fictional example).
 - `scripts/make_pdf.py` - HTML to PDF with headless Chrome or Edge, page-fill report, PNG previews.

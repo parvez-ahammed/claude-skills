@@ -33,7 +33,11 @@ def find_browser():
     sys.exit("No Chrome or Edge found. Set CHROME_PATH.")
 
 
+if len(sys.argv) != 3:
+    sys.exit("Usage: python make_pdf.py <guide.html> <out.pdf>")
 html, pdf = (pathlib.Path(p).resolve() for p in sys.argv[1:3])
+# Remove an old PDF first, so a failed print is not mistaken for success.
+pdf.unlink(missing_ok=True)
 subprocess.run(
     [find_browser(), "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
      f"--print-to-pdf={pdf}", html.as_uri()],

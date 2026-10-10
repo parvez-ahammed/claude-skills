@@ -1,6 +1,6 @@
 ---
 name: video-maker
-description: Make animated promo, explainer, product-launch, feature-announcement, tutorial-teaser or social-media videos entirely from code, as a ready-to-publish MP4 with voice-over, music, captions and a thumbnail. Use this skill whenever the user asks for a video, promo, teaser, ad, explainer, reel, short, TikTok, LinkedIn or YouTube clip, motion graphic, animated walkthrough, or "a video about this project/product/feature" - even if they do not name any tool - and whenever they want to change, lengthen, shorten, re-colour, re-voice or re-render a video made this way.
+description: Makes animated promo, explainer, product-launch, feature-announcement, tutorial-teaser or social-media videos entirely from code, as a ready-to-publish MP4 with voice-over, music, captions and a thumbnail. Use this skill whenever the user asks for a video, promo, teaser, ad, explainer, reel, short, TikTok, LinkedIn or YouTube clip, motion graphic, animated walkthrough, or "a video about this project/product/feature" - even if they do not name any tool - and whenever they want to change, lengthen, shorten, re-colour, re-voice or re-render a video made this way.
 ---
 
 # Video maker
@@ -8,7 +8,7 @@ description: Make animated promo, explainer, product-launch, feature-announcemen
 You write a small project (a script, a brand file, one HTML page of scenes). The shared engine turns it into a
 finished video. Everything is free and local: no stock footage, no licensed music, no cloud service.
 
-Engine: the `engine/` folder next to this SKILL.md (below: `$E`). Paths in commands are examples; quote paths with spaces.
+Engine: the `engine/` folder next to this SKILL.md, i.e. `${CLAUDE_SKILL_DIR}/engine` (below: `$E`). Paths in commands are examples; quote paths with spaces.
 
 ## What the user gets
 

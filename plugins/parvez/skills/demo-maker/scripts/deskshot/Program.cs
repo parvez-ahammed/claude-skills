@@ -4,13 +4,14 @@ using System.Runtime.InteropServices;
 
 namespace DeskShot;
 
-// Renders the client's own WinForms forms to PNG and composites them over a screenshot of the running client.
+// Optional Windows adapter for demo-maker: renders a WinForms app's own forms to PNG and composites them
+// over a screenshot of the running app. ClientBin = the app's build output folder (see deskshot.csproj).
 // Usage: dotnet run -- real | new   [--out <dir>] [--backdrop <png>]
 internal static class Program
 {
     internal static string ClientBin;
     internal static string Out = Path.GetFullPath("screens");
-    internal static string Backdrop = Path.GetFullPath(Path.Combine("..", "capture", "desktop-backdrop.png"));
+    internal static string Backdrop = Path.GetFullPath(Path.Combine("..", "desktop-backdrop.png"));
 
     [STAThread]
     private static void Main(string[] args)
@@ -26,7 +27,7 @@ internal static class Program
         Run(args);
     }
 
-    // Separate method: the JIT resolves client types per method, so AssemblyResolve must be hooked first.
+    // Separate method: the JIT resolves the app's types per method, so AssemblyResolve must be hooked first.
     private static void Run(string[] args)
     {
         for (var i = 0; i < args.Length - 1; i++)
@@ -45,7 +46,7 @@ internal static class Program
         if (args.Contains("new")) Screens.New();
     }
 
-    // Copy the client's own startup setup here (skin, accent colour, default font), or the controls look wrong.
+    // Copy the app's own startup setup here (skin, accent colour, default font), or the controls look wrong.
     // DevExpress example: UserLookAndFeel.Default.SetSkinStyle(SkinStyle.WXI); WindowsFormsSettings.SetAccentColor(color);
     private static void ApplyClientSetup()
     {

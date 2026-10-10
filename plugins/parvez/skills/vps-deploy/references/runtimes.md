@@ -55,8 +55,10 @@ CMD ["sh","-c","uvicorn app.main:app --host 0.0.0.0 --port ${PORT}"]   # FastAPI
 ```dockerfile
 FROM golang:1.23 AS build
 WORKDIR /src
-COPY go.* ./ && RUN go mod download
-COPY . . && RUN CGO_ENABLED=0 go build -o /app/server ./cmd/server
+COPY go.* ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 go build -o /app/server ./cmd/server
 FROM gcr.io/distroless/static
 COPY --from=build /app/server /server
 EXPOSE 8080
@@ -66,7 +68,7 @@ ENTRYPOINT ["/server"]
 - distroless has no shell/curl — definitely health-check externally.
 - Env keys: flat env vars read via `os.Getenv`.
 
-## .NET (this project's stack)
+## .NET (ASP.NET Core)
 
 ```dockerfile
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build

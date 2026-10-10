@@ -10,8 +10,9 @@ app code unless asked).
 2. **Generate the test-case catalogue from code** (subagents, one per domain): read routes/controllers/
    services + existing e2e specs; emit IDs, preconditions, steps, expected, priority. Don't test from memory.
 3. **Execute via the browser**, a screenshot per state + console errors per page. Real data, complete flows.
-4. **Verify money/credit/render/ffmpeg at the API level** with subagents (balances before/after, idempotency,
-   refunds, signed URLs, ffprobe). Save raw findings to JSON.
+4. **Verify the high-stakes paths at the API/data level** with subagents - whatever the app has of
+   payments, balances/quotas, generated files or media, external integrations (values before/after,
+   idempotency, refunds, signed URLs, `ffprobe` on media). Save raw findings to JSON.
 5. **Assemble the HTML report** per the 14 sections below; open it.
 
 ## 14-section structure
@@ -37,7 +38,7 @@ app code unless asked).
 10. **Coverage report** - executed/passed/failed/blocked/skipped + heatmap across functional,
     regression, UI, API, security, performance.
 11. **Risk register** - risk, probability, impact, mitigation, owner.
-12. **Release readiness checklist** - auth, billing, payments, generation, monitoring, recovery,
+12. **Release readiness checklist** - auth, billing/payments (if any), core feature flows, monitoring, recovery,
     observability, secrets, external integrations -> READY / NOT READY / UNKNOWN.
 13. **Action items** - priority, task, owner (placeholder), ETA.
 14. **Appendix** - environment, versions, raw evidence, artifacts, screenshots, console logs, API outputs.

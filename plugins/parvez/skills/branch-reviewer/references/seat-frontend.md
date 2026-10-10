@@ -243,7 +243,7 @@ list yours in the project rules).
   coupling: editing one restyles unrelated screens. Use a wrapper component; global values belong in the
   theme.
 - Inline helpers -> shared utilities if reusable, else hoisted to module top.
-- Comments: see **Comment quality** in `../SKILL.md`.
+- Comments: see **Comment quality** in `comment-quality.md`.
 
 ---
 
@@ -420,5 +420,5 @@ If a rule is broken once, find every instance and list them in one finding.
 
 ## Comments
 
-Judge every added or edited comment in your files against **Comment quality** in `../SKILL.md`. One
+Judge every added or edited comment in your files against **Comment quality** in `comment-quality.md`. One
 finding per file. A deleted comment that carried a safety reason is `med` / `Required`.

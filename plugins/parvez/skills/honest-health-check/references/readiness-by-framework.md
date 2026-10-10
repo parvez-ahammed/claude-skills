@@ -11,8 +11,8 @@ app.get("/healthz", (_req, res) => res.status(200).send("healthy")); // liveness
 
 app.get("/readyz", async (_req, res) => {                            // readiness
   try {
+    if (!process.env.DATABASE_URL) throw new Error("missing DATABASE_URL"); // required config
     await db.query("SELECT 1");                 // real round-trip
-    if (!process.env.DATABASE_URL) throw new Error("missing DATABASE_URL");
     res.status(200).send("healthy");
   } catch (e) {
     res.status(503).send("unhealthy: " + e.message);

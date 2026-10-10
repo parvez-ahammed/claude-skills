@@ -13,7 +13,8 @@ import zlib from "node:zlib";
 const args = process.argv.slice(2);
 const appRoutesIndex = args.indexOf("--app-routes");
 const appRoutes = appRoutesIndex >= 0 ? new RegExp(args[appRoutesIndex + 1]) : null;
-const positional = args.filter((_, i) => i !== appRoutesIndex && i !== appRoutesIndex + 1);
+// Guard the index: with no --app-routes, appRoutesIndex + 1 === 0 would drop the build dir.
+const positional = appRoutesIndex >= 0 ? args.filter((_, i) => i !== appRoutesIndex && i !== appRoutesIndex + 1) : args;
 const buildDir = path.resolve(positional[0] ?? "build");
 const port = Number(positional[1] ?? 4180);
 
@@ -49,9 +50,16 @@ function send(req, res, status, file, transform) {
 http
   .createServer((req, res) => {
     const url = new URL(req.url, "http://localhost");
-    const rel = decodeURIComponent(url.pathname).replace(/^\/+/, "");
-    const file = path.resolve(buildDir, rel);
-    if (!file.startsWith(buildDir)) return send(req, res, 404, inBuild("index.html"));
+    let rel;
+    try {
+      rel = decodeURIComponent(url.pathname).replace(/^\/+/, "");
+    } catch {
+      rel = null; // malformed %-escape: answer 404 instead of crashing the server
+    }
+    const file = rel === null ? null : path.resolve(buildDir, rel);
+    if (file === null || (file !== buildDir && !file.startsWith(buildDir + path.sep))) {
+      return send(req, res, 404, exists(inBuild("404.html")) ? inBuild("404.html") : inBuild("index.html"));
+    }
     if (rel === "nojs") {
       return send(req, res, 200, inBuild("index.html"), (html) =>
         html.replace(/<script type="module"[^>]*>[\s\S]*?<\/script>/g, "").replace(/<link rel="modulepreload"[^>]*>/g, ""),

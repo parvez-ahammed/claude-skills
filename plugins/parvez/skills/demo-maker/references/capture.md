@@ -1,7 +1,7 @@
 # Capture reference
 
-The scripts in `scripts/` are a starting point, not finished tools. Copy `helpers.js`, `extract.py`,
-`build.py` and `deskshot/` into `<work-dir>/capture/`, and `demo.css` into `<work-dir>/demo/`. Then
+The scripts in `${CLAUDE_SKILL_DIR}/scripts/` are a starting point, not finished tools. Copy
+`helpers.js`, `extract.py`, `build.py` (and `deskshot/` only if you use the desktop adapter) into `<work-dir>/capture/`, and `demo.css` into `<work-dir>/demo/`. Then
 change, per demo:
 
 - `helpers.js`: nothing, usually. The fakes are set up from the page with `__fakeModule` or
@@ -108,31 +108,32 @@ Find these class names in the parts and reuse them:
 CSS-in-JS class names (`css-1abc2de`) are stable within one build. Re-capture after the app's
 styles change.
 
-## Desktop capture (WinForms)
+## Desktop capture (optional adapter: Windows + WinForms)
 
-The same principle: render the client's own controls, not look-alikes. Third-party suites
+Only for demos that also change a WinForms desktop app; web-only demos skip this section. The same
+principle: render the desktop app's own controls, not look-alikes. Third-party suites
 (DevExpress, Telerik, Syncfusion, Infragistics) draw their own skin, so only the real control
 gives the real look.
 
-1. **Start the client** from its build output in the background. Check that the exe is newer than
+1. **Start the desktop app** from its build output in the background. Check that the exe is newer than
    the feature's source files. Ask the user to sign in if needed.
 2. **Backdrop.** Take a screenshot of the running main window on the right tab with any desktop
    automation (computer-use tool, `PrintWindow` on its handle, or the user's own screenshot). Save
    it to `capture/desktop-backdrop.png`. Native file pickers usually ignore synthetic typing - do
    not try to drive them.
 3. **Tool.** `scripts/deskshot` is a `net8.0-windows` WinExe.
-   - Set `ClientBin` in `deskshot.csproj` to the client's build output folder, and add a
-     `<Reference>` for each client or vendor DLL you construct forms from. `Program.cs` resolves
+   - Set `ClientBin` in `deskshot.csproj` to the desktop app's build output folder, and add a
+     `<Reference>` for each app or vendor DLL you construct forms from. `Program.cs` resolves
      every other assembly from the same folder at run time.
-   - Repeat the client's startup setup in `Program.ApplyClientSetup` (skin, accent colour, default
-     font, DPI mode) - copy it from the client's `Main`. For DevExpress that is typically
+   - Repeat the app's startup setup in `Program.ApplyClientSetup` (skin, accent colour, default
+     font, DPI mode) - copy it from the app's `Main`. For DevExpress that is typically
      `UserLookAndFeel.Default.SetSkinStyle(...)` and `WindowsFormsSettings.SetAccentColor(...)`.
    - `dotnet run -- real` renders today's dialogs with sample data (the reference to compare
      against). `dotnet run -- new` renders the new screens. Edit both in `Screens.cs`.
 4. **Traps.**
    - Use `PrintWindow(hwnd, hdc, 2)` (`PW_RENDERFULLCONTENT`), not a screen copy. A screen copy
      captures the lock screen or whatever window is on top.
-   - Target the same .NET version as the client. Vendor controls can fail on a newer runtime (for
+   - Target the same .NET version as the app. Vendor controls can fail on a newer runtime (for
      example a license or icon check that throws), so do not run them from a PowerShell host that
      loads a different runtime.
    - Grids: add columns explicitly. Auto-populate often gives no columns before the form has a

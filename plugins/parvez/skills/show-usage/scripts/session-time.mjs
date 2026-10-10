@@ -131,8 +131,9 @@ function resolveProjectDir(project) {
 
 function fmt(ms) {
   if (!ms || ms < 0) ms = 0;
-  const h = Math.floor(ms / 3600000);
-  const m = Math.round((ms % 3600000) / 60000);
+  const totalMin = Math.round(ms / 60000); // round once so 59.6m reads "1h 0m", not "60m"
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
   return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 

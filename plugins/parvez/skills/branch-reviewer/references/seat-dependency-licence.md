@@ -50,8 +50,8 @@ close before merge.
 - Unknown or unreadable licence -> `high`.
 - Commercial licence with a real price and no evidence the cost was agreed -> `high`. The finding is not
   "this is bad"; it is "someone has to sign off on this spend".
-- Permissive (MIT, Apache-2.0, BSD) and free for commercial use -> `info`, one line per package, no
-  action. Say it explicitly so the reader knows the check ran.
+- Permissive (MIT, Apache-2.0, BSD) and free for commercial use -> no finding, but one table row per
+  package that says so, so the reader knows the check ran.
 - A package that duplicates one already referenced in the repo -> `med`, name the existing one.
 
 ## Output

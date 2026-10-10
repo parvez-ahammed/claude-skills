@@ -1,5 +1,6 @@
 ---
 name: behavioral-patterns
+argument-hint: "[file or symbol]"
 description: Score whether a behavioral design pattern (Strategy, State, Command, Observer, Chain of Responsibility, Template Method, Visitor, Mediator, Iterator, Memento) fits a code site, and recommend it only when scored preconditions are met. Use when the user asks "should I use a strategy/state/observer here", "where can I apply a behavioral pattern", or when object interaction is awkward (switch on a type to pick an algorithm, behavior driven by internal state, requests needing queue/undo, one-to-many notifications, request handled by a chain, duplicated algorithm skeletons, operations spread across a class hierarchy, tangled many-to-many communication). Each pattern has opportunity signatures, weighted preconditions, a threshold, and hard-veto anti-indicators; emits APPLY / CONSIDER / REJECT with cited evidence. Spoke of refactoring-guru; usable standalone.
 ---
 
@@ -7,11 +8,18 @@ description: Score whether a behavioral design pattern (Strategy, State, Command
 
 Behavioral patterns are about how objects interact and distribute responsibility. You score
 a site and report a verdict; you do not edit code. Follow the shared scoring rules in
-`refactoring-guru/references/verdict-format.md`.
+`${CLAUDE_SKILL_DIR}/../refactoring-guru/references/verdict-format.md` (bundled with
+the refactoring-guru skill). If it is not installed, the rules are: a precondition scores only
+with a cited `file:line`; any anti-indicator is an absolute veto (REJECT); score >= threshold
+with the anchor met -> APPLY, near-miss or cost outweighs the problem -> CONSIDER, else
+REJECT; apply language notes last and downgrade one step when an idiom makes the pattern
+redundant.
 
 The three highest-value, most-confused patterns (Strategy, State, Command) have deep entries
 with worked disambiguation in `references/strategy-state-command.md`. Read it when scoring
-any of them, or when a Switch-Statements smell points here.
+any of them, when a Switch-Statements smell points here, or when you need a cross-pattern
+distinguishing question. The other seven patterns are fully specified inline below; there is
+no separate reference file for them.
 
 ---
 
@@ -187,6 +195,10 @@ cost: heavy boilerplate (accept/visit), double dispatch, hard for newcomers.
 ### Mediator
 intent: centralize complex many-to-many communication between objects in one mediator.
 
+opportunity signatures:
+  - components (UI widgets, services) holding references to many peers and calling them directly
+  - one event causing a cascade of peer-to-peer updates that is hard to trace
+
 preconditions (scored):
   [3] a set of objects communicate in a tangled n-to-n web
   [2] the coupling makes them hard to reuse or change independently
@@ -204,6 +216,10 @@ cost: the mediator can centralize too much and turn into a god object.
 
 ### Iterator
 intent: access elements of a collection sequentially without exposing its representation.
+
+opportunity signatures:
+  - clients reaching into a custom structure's internals (nodes, indices, pages) to walk it
+  - the same traversal loop over a custom structure duplicated in several callers
 
 preconditions (scored):
   [3] clients need to traverse a custom/complex structure without seeing its internals
@@ -225,6 +241,10 @@ Iterator is almost always REJECT unless traversing a genuinely custom structure.
 intent: capture and externalize an object's internal state so it can be restored later,
 without violating encapsulation.
 
+opportunity signatures:
+  - undo/redo or "revert to last saved" implemented by copying fields by hand
+  - other classes reading private state only to save and later restore it
+
 preconditions (scored):
   [3] you need snapshots/undo of an object's state
   [2] the state must be captured without exposing internals
@@ -243,8 +263,8 @@ cost: memento storage and lifecycle.
 
 Emit per scored site in the orchestrator's unified report shape, with matched preconditions
 and `file:line` evidence, score, any veto, verdict, one-line why. For the classic confusions
-(Strategy vs State, Template Method vs Strategy, Decorator vs Chain), state the single
-distinguishing question; see references/strategy-state-command.md for Strategy/State/Command.
+(Strategy vs State, Template Method vs Strategy, Decorator vs Chain, Observer vs Mediator),
+state the single distinguishing question; they are all in references/strategy-state-command.md.
 
 ## Evals
 

@@ -5,30 +5,37 @@ The orchestrator uses this to decide which spoke to invoke for a given symptom. 
 spoke always has final say via its scored preconditions; this table only nominates
 candidates.
 
+Covers all 22 smells `code-smell-detector` triages (plus Incomplete Library Class), and every
+refactoring named here has an entry in `refactoring-methods`. Keep the three in sync: if a
+smell or refactoring is added to a spoke, add its row here.
+
 ## Smell -> refactoring (fix the smell directly)
 
 | Smell | Group | Candidate refactorings | Spoke |
 |-------|-------|------------------------|-------|
 | Long Method | Bloater | Extract Method, Replace Temp with Query, Decompose Conditional | refactoring-methods |
 | Large Class | Bloater | Extract Class, Extract Subclass, Extract Interface | refactoring-methods |
-| Long Parameter List | Bloater | Introduce Parameter Object, Preserve Whole Object | refactoring-methods |
-| Primitive Obsession | Bloater | Replace Primitive with Object, Introduce Parameter Object | refactoring-methods |
+| Long Parameter List | Bloater | Introduce Parameter Object, Preserve Whole Object, Replace Parameter with Method Call | refactoring-methods (+ behavioral if flag params select behavior: Strategy) |
+| Primitive Obsession | Bloater | Replace Primitive with Object, Replace Type Code with Subclasses / State/Strategy | refactoring-methods (+ behavioral when the type code drives behavior) |
 | Data Clumps | Bloater | Extract Class, Introduce Parameter Object | refactoring-methods |
 | Switch Statements | OO-Abuser | Replace Conditional with Polymorphism, Replace Type Code with Subclasses | refactoring-methods + creational/behavioral |
 | Temporary Field | OO-Abuser | Extract Class, Introduce Null Object | refactoring-methods |
-| Refused Bequest | OO-Abuser | Replace Inheritance with Delegation, Extract Superclass | refactoring-methods |
+| Refused Bequest | OO-Abuser | Replace Inheritance with Delegation, Push Down Method/Field | refactoring-methods |
+| Alternative Classes with Different Interfaces | OO-Abuser | Rename Method, Move Method, Extract Superclass | refactoring-methods (+ structural: Adapter if a class cannot be changed) |
 | Divergent Change | Change-Preventer | Extract Class (split responsibilities) | refactoring-methods |
 | Shotgun Surgery | Change-Preventer | Move Method/Field, Inline Class | refactoring-methods |
-| Parallel Inheritance | Change-Preventer | Move Method/Field to collapse hierarchies | refactoring-methods |
-| Comments (crutch) | Dispensable | Extract Method, Rename, Introduce Assertion | refactoring-methods |
+| Parallel Inheritance Hierarchies | Change-Preventer | Move Method/Field to collapse hierarchies | refactoring-methods |
+| Comments (as deodorant) | Dispensable | Extract Method, Rename, Introduce Assertion | refactoring-methods |
 | Duplicate Code | Dispensable | Extract Method, Pull Up Method, Form Template Method | refactoring-methods + behavioral |
 | Dead Code | Dispensable | Delete; Inline | refactoring-methods |
 | Speculative Generality | Dispensable | Collapse Hierarchy, Inline Class, Remove Parameter | refactoring-methods |
 | Lazy Class | Dispensable | Inline Class, Collapse Hierarchy | refactoring-methods |
+| Data Class | Dispensable | Encapsulate Field/Collection, Remove Setting Method, Move Method | refactoring-methods |
 | Feature Envy | Coupler | Move Method, Extract Method | refactoring-methods |
-| Inappropriate Intimacy | Coupler | Move Method/Field, Replace Inheritance with Delegation | refactoring-methods |
+| Inappropriate Intimacy | Coupler | Move Method/Field, Change Bidirectional Association to Unidirectional, Replace Inheritance with Delegation | refactoring-methods |
 | Message Chains | Coupler | Hide Delegate, Extract Method | refactoring-methods + structural (Facade) |
-| Middle Man | Coupler | Remove Middle Man, Inline | refactoring-methods |
+| Middle Man | Coupler | Remove Middle Man, Inline Method, Replace Delegation with Inheritance | refactoring-methods (+ structural if the indirection is a deliberate Proxy/Decorator/Facade) |
+| Incomplete Library Class | Other | Introduce Foreign Method / Local Extension | refactoring-methods (+ structural: Adapter) |
 
 ## Symptom -> candidate design pattern (when refactoring alone is not enough)
 
@@ -79,3 +86,7 @@ candidates.
   intent.
 - Adapter vs Facade: Adapter makes one interface fit a required one; Facade simplifies a
   whole subsystem.
+- Template Method vs Strategy: inheritance with a fixed skeleton vs composition with injected
+  variation; runtime choice or unwanted inheritance -> Strategy.
+- Chain of Responsibility vs Decorator: may a link end the request? yes -> Chain.
+- Observer vs Mediator: one-to-many notification vs centralized many-to-many coordination.

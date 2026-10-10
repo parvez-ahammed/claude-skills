@@ -1,5 +1,6 @@
 ---
 name: refactoring-guru
+argument-hint: "[file, directory, or symbol] [optional: pattern or smell]"
 description: Orchestrator for code refactoring and design-pattern work. Use when the user wants to improve, clean up, restructure, or "refactor" code; find code smells; decide whether or where to apply a design pattern (Factory, Builder, Strategy, Observer, Adapter, etc.); or asks "is this pattern right here", "where can I use a pattern", "how do I fix this smell". Understands the user's intent, then routes to the right spoke skill (code-smell-detector, refactoring-methods, creational-patterns, structural-patterns, behavioral-patterns) and merges their findings. Patterns are only recommended when a code site meets scored preconditions with cited evidence.
 ---
 
@@ -81,5 +82,9 @@ NEXT: <which skill/step, e.g. "apply via refactoring-methods: Extract Method">
 
 ## References
 
-- `references/linkage-map.md` - master table: symptom -> candidate refactoring/pattern -> spoke.
-- `references/verdict-format.md` - the shared scored-precondition schema every spoke follows.
+- `references/linkage-map.md` - read when choosing which spoke(s) to invoke for a symptom:
+  smell -> candidate refactoring/pattern -> spoke, plus the disambiguation questions.
+- `references/verdict-format.md` - read when merging or explaining verdicts: the shared
+  scored-precondition schema. The pattern spokes and refactoring-methods load it via
+  `${CLAUDE_SKILL_DIR}/../refactoring-guru/references/verdict-format.md` and carry an inline
+  summary so they still work if installed without this skill.

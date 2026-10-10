@@ -39,29 +39,41 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup SSH
+        env:
+          VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
         run: |
           mkdir -p ~/.ssh
-          printf '%s\n' "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_ed25519
+          printf '%s\n' "$VPS_SSH_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -p "${SSH_PORT}" -H "${{ vars.VPS_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
 
       # Render the app's REAL config keys (examples below mix flat + .NET-style; use
       # whatever your framework reads). env_file in compose passes these literally,
       # avoiding compose ${VAR} substitution mangling secrets that contain '$'.
+      # Pass secrets through step `env:`, never inline `${{ secrets.X }}` in the heredoc:
+      # inline values are pasted into the script text, so a '$' or backtick in a
+      # password is expanded by bash before it reaches the file. Expanding an env var
+      # is not re-expanded, so its value lands literally.
       - name: Render app.env from secrets
+        env:
+          DB_CONNECTION_STRING: ${{ secrets.DB_CONNECTION_STRING }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+          GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
         run: |
           cat > deploy/app.env <<EOF
-          DATABASE_URL=${{ secrets.DB_CONNECTION_STRING }}
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          GOOGLE_CLIENT_ID=${{ secrets.GOOGLE_CLIENT_ID }}
-          GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+          DATABASE_URL=${DB_CONNECTION_STRING}
+          JWT_SECRET=${JWT_SECRET}
+          GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+          GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
           OAUTH_REDIRECT_URI=${API_BASE}/api/auth/callback
-          FRONTEND_URL=${{ vars.FRONTEND_URL }}
-          CORS_ALLOWED_ORIGIN=${{ vars.FRONTEND_URL }}
+          FRONTEND_URL=${FRONTEND_URL}
+          CORS_ALLOWED_ORIGIN=${FRONTEND_URL}
           ALLOWED_HOST=${API_HOST}
           # ...add the rest your app needs...
           EOF
-          echo "rendered $(wc -l < deploy/app.env) keys"
+          echo "rendered $(grep -c '^[A-Za-z_]' deploy/app.env) keys"
 
       - name: Ensure rsync on VM
         run: |
@@ -89,20 +101,27 @@ jobs:
       # readiness check that fails if the DB is unreachable.
       - name: Health check
         run: |
-          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" bash -s <<'EOF'
-          cd ~/app/deploy
-          NET=$(docker network ls --format '{{.Name}}' | grep -E 'app|deploy' | head -1)
+          ssh -p "${SSH_PORT}" -i ~/.ssh/id_ed25519 "${{ vars.VPS_USER }}@${{ vars.VPS_HOST }}" \
+            bash -s -- "${REMOTE_DIR}" "${API_HOST}" <<'EOF'
+          cd "$1/deploy"
+          HOST_HDR="$2"
+          SVC=api      # compose service name of the app (must match docker-compose.yml)
+          PORT=8080    # the app's listen port inside the container
+          # Resolve the network the app container is actually on (no name guessing).
+          CID=$(docker compose ps -q "$SVC")
+          [ -n "$CID" ] || { echo "service '$SVC' is not running"; docker compose ps; exit 1; }
+          NET=$(docker inspect -f '{{range $k, $v := .NetworkSettings.Networks}}{{$k}} {{end}}' "$CID" | awk '{print $1}')
           ok=
           for i in $(seq 1 25); do
             if docker run --rm --network "$NET" curlimages/curl:8.11.1 \
-                 -sf --max-time 5 -H "Host: your.domain.example" \
-                 http://app:8080/health 2>/dev/null | grep -qi '^healthy'; then
+                 -sf --max-time 5 -H "Host: ${HOST_HDR}" \
+                 "http://${SVC}:${PORT}/health" 2>/dev/null | grep -qi '^healthy'; then
               echo "liveness OK"; ok=1; break
             fi
             echo "waiting for app... ($i)"; sleep 6
           done
-          [ -n "$ok" ] || { echo "app never came up"; docker compose ps; docker compose logs --tail=60 app; exit 1; }
-          if docker compose logs --tail=120 app 2>&1 | grep -qiE "ConnectionString.*not been initialized|authentication failed|could not connect|ECONNREFUSED"; then
+          [ -n "$ok" ] || { echo "app never came up"; docker compose ps; docker compose logs --tail=60 "$SVC"; exit 1; }
+          if docker compose logs --tail=120 "$SVC" 2>&1 | grep -qiE "ConnectionString.*not been initialized|authentication failed|could not connect|ECONNREFUSED"; then
             echo "FAIL: app up but DB unreachable (check secrets)"; exit 1
           fi
           echo "deploy healthy"

@@ -25,8 +25,15 @@ in `vps-hardening.md`, or attackers just scan the IP and bypass the CDN.
      the `caddy-dns/cloudflare` plugin and give it a scoped **Zone.DNS:Edit** API
      token. In the Caddyfile:
      ```
-     your.domain { tls { dns cloudflare {env.CF_API_TOKEN} } reverse_proxy app:8080 }
+     your.domain {
+     	tls {
+     		dns cloudflare {env.CF_API_TOKEN}
+     	}
+     	reverse_proxy api:8080
+     }
      ```
+     (Caddyfile blocks need a newline after `{` and `}` on its own line; a one-line
+     block does not parse.)
      Pass `CF_API_TOKEN` to the caddy service (via the rendered env / compose).
      Use a Caddy image that includes the plugin (custom build or a community image).
    - **Cloudflare Origin Certificate**: generate a 15-year origin cert in the
@@ -41,7 +48,7 @@ it to the box. Never commit it.
 ## Simple path (DNS-only, any provider)
 
 1. **A record**: name -> VPS IP, **not proxied** (grey cloud / a plain registrar like
-   Namecheap, Route53, Porkbun, Google Domains).
+   Namecheap, Route53, Porkbun, Gandi).
 2. Caddy issues automatically via **HTTP-01** once the record resolves and 80/443 are
    reachable. If Caddy started before DNS existed, it backed off — **restart Caddy**:
    `docker compose restart caddy`.

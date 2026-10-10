@@ -12,7 +12,13 @@ grn() { printf '\033[32m%s\033[0m\n' "$*"; }
 
 # 1) Preferred: gitleaks on the staged change set.
 if command -v gitleaks >/dev/null 2>&1; then
-  if gitleaks protect --staged --redact --no-banner; then
+  # gitleaks >= 8.19 replaced `protect --staged` with `git --staged`; support both.
+  if gitleaks git --help >/dev/null 2>&1; then
+    scan=(gitleaks git --staged --redact --no-banner)
+  else
+    scan=(gitleaks protect --staged --redact --no-banner)
+  fi
+  if "${scan[@]}"; then
     grn "secret-hygiene: gitleaks clean."
     exit 0
   else

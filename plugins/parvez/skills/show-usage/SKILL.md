@@ -1,6 +1,7 @@
 ---
 name: show-usage
-description: Use when someone wants to see how much time, how many sessions, or how many tokens and dollars they have spent on a coding project locally. Triggers on "show usage", "how long have I worked on this", "how much time did I spend", "my claude time", "wakatime for claude", "session stats", "token usage", "cost per project", "how many hours on this project". Reads local Claude Code transcripts and prints WakaTime-style active time plus token/cost/tool tables. Local, read-only, zero deps.
+description: Shows how much time, how many sessions, and how many tokens and dollars were spent on a coding project, from local Claude Code transcripts. Triggers on "show usage", "how long have I worked on this", "how much time did I spend", "my claude time", "wakatime for claude", "session stats", "token usage", "cost per project", "how many hours on this project". Prints WakaTime-style active time plus token/cost/tool tables. Local, read-only, zero deps.
+argument-hint: "[--by day|week|dow|hour|session|model|tool] [--since YYYY-MM-DD] [--project <path>]"
 ---
 
 # show-usage
@@ -10,12 +11,13 @@ project, from the JSONL transcripts under `~/.claude/projects/`.
 
 ## Run
 
-Run the bundled script with Node, using the path of the skill directory you loaded this from
-(it sits at `<skill-dir>/scripts/session-time.mjs`):
+Run the bundled script with Node (16+, no packages needed):
 
 ```bash
-node "<skill-dir>/scripts/session-time.mjs"
+node "${CLAUDE_SKILL_DIR}/scripts/session-time.mjs"
 ```
+
+Pass any arguments the user gave straight through as flags.
 
 With no `--project` it measures the **current working directory's** project. Pass flags to
 slice it. Append `--help` for the full flag list and examples; the common ones:
@@ -26,6 +28,9 @@ slice it. Append `--help` for the full flag list and examples; the common ones:
 - `--list-projects` rank every project
 - `--no-subagents` exclude subagent transcripts from token/cost/tool totals
 - `--json` raw numbers
+
+`README.md` in this skill directory has the full flag table and how transcripts are located; read
+it only when the user asks how the numbers are computed.
 
 ## What to know before reading the numbers
 

@@ -1,8 +1,8 @@
 namespace DeskShot;
 
-// Rewrite for each demo. "Real" constructs today's dialogs from the client's assembly with sample data,
-// for example: using var f = new YourClient.Forms.ExportDialog(sampleDto); Program.Save(Program.Snap(f), "real-export.png");
-// "New" builds the planned screens from the same control types the client's Designer files use.
+// Rewrite for each demo. "Real" constructs today's dialogs from the app's assembly with sample data,
+// for example: using var f = new YourApp.Forms.ExportDialog(sampleDto); Program.Save(Program.Snap(f), "real-export.png");
+// "New" builds the planned screens from the same control types the app's Designer files use.
 internal static class Screens
 {
     public static void Real()
@@ -16,7 +16,7 @@ internal static class Screens
         Program.Save(File.Exists(Program.Backdrop) ? Program.Composite(new Bitmap(Program.Backdrop), shot) : shot, "new-01-review.png");
     }
 
-    // Plain WinForms placeholder. In a real demo use the client's grid, label and button types instead.
+    // Plain WinForms placeholder. In a real demo use the app's grid, label and button types instead.
     private static Form ExampleDialog((string Name, string Status)[] rows)
     {
         var form = new Form { Text = "Review files", ClientSize = new Size(520, 260), FormBorderStyle = FormBorderStyle.FixedDialog };

@@ -64,13 +64,12 @@ comment and must read like one:
 
 Example:
 
-> The sync step reads the projects with LoadProjectsWithFieldsAsync. That call also loads the custom
-> fields of every project, and the sync does not use them. On a source with about 1,500 projects this
-> step took about 3 minutes. LoadProjectsAsync returns the same projects without the fields in 17
-> seconds, so the sync can use it.
+> The import step reads the items with GetItemsWithDetails. That call also loads the full details of
+> every item, and the import does not use them. With about 1,500 items this step took about 3 minutes.
+> GetItems returns the same items without the details in 17 seconds, so the import can use it.
 
-> The sync now uses LoadProjectsAsync. Other sources are not changed. The matched projects are the same
-> as before. I added two tests for it.
+> The import now uses GetItems. Other callers are not changed. The imported items are the same as
+> before. I added two tests for it.
 
 The verification gate still applies: the user's name on a wrong comment costs more than an agent label.
 
@@ -122,8 +121,8 @@ That is usually the most useful comment you can write.
 
 The terseness to imitate:
 
-> This effect also turns on "only mapped fields" for normal agreements. After the next save, the job
-> stops writing core fields that are not mapped. Should the default apply only to the new receiver type?
+> This default also turns on "changed fields only" for existing records. After the next save, the
+> job stops writing fields that did not change. Should the default apply only to new records?
 
 > Should the TODO comments above be updated now?
 
@@ -135,10 +134,10 @@ be its own component?" with no risk stated mostly gets "yes" and changes nothing
 
 | Instead of | Write |
 |---|---|
-| "This is a critical bug that will cause the notification to never fire." | `Concern : FailureReason is set on the domain event but is not on StatusUpdateDto, so the mapping drops it.` |
-| "You must add the new codes to the resolver factory." | `Concern : Do the two new event codes need adding to RecipientResolverFactory too? The UploadFailed codes are in there.` |
-| "The seed ids collide, this will crash on startup." | `Concern : Id = 64 is already used on main for the approval template.` |
-| "This violates acceptance criterion 3." | `Concern : For the manual re-run in the ticket, does this path still get scheduled once the veto is set?` |
+| "This is a critical bug that will cause the notification to never fire." | `Concern : FailureReason is set on the domain event but is not on StatusDto, so the mapping drops it.` |
+| "You must add the new codes to the resolver factory." | `Concern : Do the two new event codes need adding to HandlerRegistry too? The existing failure codes are in there.` |
+| "The seed ids collide, this will crash on startup." | `Concern : Id = 64 is already used on main by another seed row.` |
+| "This violates acceptance criterion 3." | `Concern : For the manual re-run in the ticket, does this path still run once the item is disabled?` |
 
 **Rules for the `Concern` body:**
 

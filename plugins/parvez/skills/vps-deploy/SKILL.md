@@ -1,21 +1,22 @@
 ---
 name: vps-deploy
 description: >-
-  Stand up an automated GitHub Actions CI/CD pipeline that deploys a containerized
-  web app (any runtime: Node.js, Python, Go, .NET, Rust...) to a VPS on every push,
-  pulling secrets from GitHub Secrets, fronted by Caddy for automatic HTTPS, with a
-  real domain via any DNS/CDN provider, OAuth/OIDC redirect wiring, and baseline
-  server hardening (fail2ban, non-standard SSH port, firewall, origin lockdown). Use
-  this whenever the user wants push-to-deploy CI/CD to a server/VPS/VM over SSH, to
-  move a backend off a PaaS (Render, Heroku, Fly, Railway, Vercel, Azure/AWS/GCP) onto
-  a plain box, to wire Caddy / Let's Encrypt TLS, to point a domain (Cloudflare,
-  Namecheap, Route53, etc.) at a server, to harden a fresh VPS against brute-force, or
-  to debug OAuth redirect_uri_mismatch / ACME cert / container health-check failures
-  during such a deploy. Vendor-neutral: any VPS host, any OAuth provider, any DNS.
-  Configure strictly in order: VPS + pipeline first, then OAuth, then DNS/TLS.
-  Trigger even when the user mentions only one piece ("github actions deploy my node
-  app to a vps", "point my domain at my server", "harden my new ubuntu box",
-  "redirect_uri_mismatch after moving hosts", "why is my cert stuck on staging").
+  Stands up a push-to-deploy GitHub Actions pipeline that ships a containerized web
+  app (Node.js, Python, Go, .NET, Rust...) to a VPS over SSH, with secrets from GitHub
+  Secrets, Caddy for automatic HTTPS, a domain via any DNS/CDN provider, OAuth/OIDC
+  redirect wiring, and baseline hardening (fail2ban, non-standard SSH port, firewall,
+  origin lockdown). Use when the user wants CI/CD to a server/VPS/VM, to move a backend
+  off a PaaS (Render, Heroku, Fly, Railway, Vercel, Azure/AWS/GCP) onto a plain box, to
+  wire Caddy / Let's Encrypt TLS, to point a domain (Cloudflare, Namecheap, Route53) at
+  a server, to harden a fresh VPS, or to debug redirect_uri_mismatch, ACME cert or
+  container health-check failures during such a deploy. Vendor-neutral; configures
+  strictly in order: VPS + pipeline, then OAuth, then DNS/TLS. Triggers on "deploy my
+  node app to a vps with github actions", "point my domain at my server", "harden my
+  new ubuntu box", "why is my cert stuck on staging".
+when_to_use: >-
+  Trigger even when the user mentions only one piece of the flow, e.g.
+  "redirect_uri_mismatch after moving hosts", "move off Heroku to my own server",
+  "add Caddy in front of my container", "my deploy is green but the app is down".
 ---
 
 # Deploy any containerized app to a VPS (CI/CD + OAuth + DNS/TLS + hardening)
@@ -70,7 +71,7 @@ GitHub (main) --push--> GitHub Actions
 3. **DNS + TLS** — point the domain, issue the cert, verify externally, cut over,
    decommission the old backend. See `references/phase3-dns-tls.md`.
 
-Templates to copy live in `assets/`: `docker-compose.yml`, `Caddyfile`,
+Templates to copy live in `${CLAUDE_SKILL_DIR}/assets/`: `docker-compose.yml`, `Caddyfile`,
 `vps-deploy.yml`, `migrate-secrets.ps1` (PaaS->GitHub secrets), `harden.sh`.
 
 ---
@@ -116,10 +117,10 @@ from GitHub Secrets, gated by an honest health check — on a hardened box.
   `wget` marks the container permanently `unhealthy` on images that lack it. Disable
   it in compose (`healthcheck: { disable: true }`) and probe **externally** from the
   workflow with a throwaway curl container on the compose network:
-  `docker run --rm --network <proj>_<net> curlimages/curl -sf http://app:PORT/health`.
+  `docker run --rm --network <proj>_<net> curlimages/curl -sf http://api:PORT/health`.
 - **Host allowlists reject internal probes (HTTP 400 "Invalid Hostname").** If the
   framework enforces allowed hosts (.NET `AllowedHosts`, Django `ALLOWED_HOSTS`,
-  Rails `config.hosts`), an internal probe to `http://app:PORT` carries Host `app` and
+  Rails `config.hosts`), an internal probe to `http://api:PORT` carries Host `api` and
   is rejected. Send the real host header: `-H "Host: your.domain"`.
 - **Anchor the health match.** `grep -qi healthy` matches `Unhealthy`. Use
   `grep -qi '^healthy'` or check the HTTP status.
@@ -157,7 +158,7 @@ accepts redirect URIs registered **exactly** on the **specific client** the app 
 ## Phase 3 — DNS + TLS (proxied by default), cutover, decommission
 
 See `references/phase3-dns-tls.md`. **Default to a proxied/CDN setup to hide the
-origin IP** (the user's stated preference and good practice), with a firewall that
+origin IP** (recommended practice), with a firewall that
 locks the origin to the CDN's IP ranges. Plain DNS-only is the simpler fallback but
 exposes your server IP.
 

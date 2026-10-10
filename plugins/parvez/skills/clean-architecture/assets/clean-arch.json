@@ -1,16 +1,16 @@
 {
-  "//": "Clean Architecture guard config. Copy to your repo root, edit roots + forbidden. 'roots' are directory paths (scanned recursively). 'forbidden' are regexes tested against import-ish lines in that layer. 'dotnet' (optional) declares the allowed .csproj reference DAG, keyed by a suffix of the project name.",
+  "//": "Clean Architecture guard config. Copy to your repo root, edit roots + forbidden. 'roots' are directory paths (scanned recursively). 'forbidden' are regexes tested (case-insensitive) against import-ish lines in that layer; npm and Go module names are quoted so that e.g. express does not also match ./expressions. 'dotnet' (optional) declares the allowed .csproj reference DAG, keyed by a suffix of the project name.",
   "fileExtensions": [".cs", ".ts", ".tsx", ".java", ".kt", ".go", ".py"],
-  "importLineRegex": "^\\s*(using|import|from|require|#include|use)\\b",
+  "importLineRegex": "^\\s*(global\\s+)?(using|import|from|require|#include|use)\\b|\\brequire\\s*\\(|^\\s*([\\w.]+\\s+)?\"[^\"]+\"\\s*$",
   "layers": [
     {
       "name": "domain",
       "roots": ["src/Domain", "Domain", "src/domain"],
       "forbidden": [
         "EntityFrameworkCore", "Microsoft\\.AspNetCore", "Npgsql", "Hangfire",
-        "express", "fastify", "axios", "@nestjs", "aws-sdk", "stripe",
+        "[\"'](express|fastify|axios|stripe|aws-sdk)[\"'/]", "[\"']@nestjs/", "[\"']@aws-sdk/",
         "org\\.springframework", "jakarta\\.persistence",
-        "database/sql", "net/http",
+        "\"database/sql\"", "\"net/http\"",
         "\\.Application", "\\.Infrastructure", "\\.\\./application", "\\.\\./infrastructure"
       ]
     },
@@ -19,7 +19,7 @@
       "roots": ["src/Application", "Application", "src/application"],
       "forbidden": [
         "EntityFrameworkCore", "Microsoft\\.AspNetCore", "Npgsql",
-        "express", "fastify", "axios", "@nestjs/platform",
+        "[\"'](express|fastify|axios)[\"'/]", "[\"']@nestjs/platform",
         "\\.Infrastructure", "\\.\\./infrastructure"
       ]
     },

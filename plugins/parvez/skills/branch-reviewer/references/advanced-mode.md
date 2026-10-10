@@ -68,8 +68,8 @@ carries, pasted in full (sub-agents see only what you pass):
 - the paths to the project rules, which override the rubric,
 - the **Investigation method** from `../SKILL.md` - all 9 points,
 - the **Output contract** (Severity / Action / Issue / Failure / Fix),
-- the severity floors: authorization rated on **API** reachability, never UI; silent data loss
-  likewise.
+- the shared rules by path: `severity-floors.md` (authorization rated on **API** reachability, never
+  UI; silent data loss likewise), `ownership-split.md` and `comment-quality.md`.
 
 ### Family B - external rubrics
 

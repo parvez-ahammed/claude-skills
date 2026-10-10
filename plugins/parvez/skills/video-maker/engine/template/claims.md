@@ -8,7 +8,7 @@ check.mjs fails until every spoken line and every on-screen text of 4 or more wo
 
 | Claim | Source |
 |---|---|
-| Still copying data by hand? | hook question, no product claim |
+| Still copying data between tools by hand? | hook question, no product claim |
 
 ## Product facts the visuals must respect
 

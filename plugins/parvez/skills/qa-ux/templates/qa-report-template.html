@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{{PRODUCT}} — QA Execution Report</title>
 <!--
-  parvez-qa report skeleton. Fill every {{TOKEN}}. Mark UNKNOWN where not verified.
+  qa-ux QA report skeleton. Fill every {{TOKEN}}. Mark UNKNOWN where not verified.
   Reference screenshots as screenshots/<name>.png (relative to this file).
   Sections: 1 Cover · 2 Release rec · 3 Exec summary · 4 Scope · 5 Traceability ·
   6 Scenario execution · 7 Defect tickets · 8 Evidence dashboard · 9 API · 10 Coverage ·
@@ -69,6 +69,8 @@
   <a href="#scenarios">6 · Scenario execution</a><a href="#defects">7 · Defect reports</a><a href="#evidence">8 · Evidence</a><a href="#api">9 · API verification</a>
   <div class="grp">Readiness</div>
   <a href="#coverage">10 · Coverage</a><a href="#risks">11 · Risk register</a><a href="#checklist">12 · Readiness checklist</a><a href="#actions">13 · Action items</a><a href="#appendix">14 · Appendix</a>
+  <div class="grp">Companion</div>
+  <a href="ux-report.html">UX audit &rarr;</a>
 </nav>
 <main>
   <!-- 1 COVER -->
@@ -89,7 +91,7 @@
   <div class="decision {{DECISION_CLASS}}">{{DECISION_EMOJI}} {{DECISION}}</div>
   <p>{{DECISION_REASONING}}</p>
   <!-- blocking issues / required fixes lists -->
-  <!-- 3..14: fill each section using the structures in SKILL.md. Keep Scenario/Expected/Actual everywhere. -->
+  <!-- 3..14: fill each section using the structures in references/qa-mode.md. Keep Scenario/Expected/Actual everywhere. -->
   <h2 class="sec" id="summary">3 · Executive summary</h2>
   <h2 class="sec" id="scope">4 · Test scope</h2>
   <h2 class="sec" id="trace">5 · Traceability matrix</h2>

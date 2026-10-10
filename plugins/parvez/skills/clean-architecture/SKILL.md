@@ -1,9 +1,9 @@
 ---
 name: clean-architecture
 description: >-
-  A rulebook + bootstrap + guard for building software with Clean / Hexagonal
+  Provides a rulebook, bootstrap and guard for building software with Clean / Hexagonal
   (Ports-and-Adapters) Architecture, in any language (.NET, TypeScript/Node, Java/Kotlin,
-  Go, Python). Use this when starting a new project and you want to lay out the layers
+  Go, Python). Use when starting a new project and you want to lay out the layers
   correctly, when structuring or refactoring code into Domain / Application /
   Infrastructure / Presentation, when deciding "where does this code go?", when adding a
   dependency or project reference and unsure if it inverts the architecture, or when the
@@ -75,12 +75,15 @@ wire concrete adapters at a single composition root.
 Folder discipline decays under deadline pressure, and these violations never fail a build
 or a test - they're architectural. Add the guard:
 
-1. Copy `assets/clean-arch.json` to your repo root and edit it: declare each layer's
+1. Copy `${CLAUDE_SKILL_DIR}/assets/clean-arch.json` to your repo root and edit it: declare each layer's
    source paths and the imports/namespaces forbidden in that layer.
 2. Run the guard:
    ```
-   pwsh -File scripts/check-layering.ps1 -Config clean-arch.json
+   pwsh -File "${CLAUDE_SKILL_DIR}/scripts/check-layering.ps1" -Config clean-arch.json -Root .
    ```
+   Needs PowerShell 7 (`pwsh`), which runs on Windows, macOS and Linux. If it is not
+   installed and cannot be, apply the same config by hand with Grep (one search per
+   layer root and forbidden pattern) and say the guard was not run.
    It scans each layer for forbidden imports (language-agnostic) and, for .NET, can
    verify the `.csproj` reference DAG. Non-zero exit on a hard violation.
 3. Wire it into CI and/or a pre-commit hook so the boundary is checked every change, not

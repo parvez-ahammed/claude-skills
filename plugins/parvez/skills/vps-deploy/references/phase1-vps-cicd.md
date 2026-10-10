@@ -25,7 +25,7 @@ as a GitHub secret. Keep it separate from your personal key.
 ```bash
 ssh-keygen -t ed25519 -f ./deploy_key -N "" -C "gh-actions-deploy"
 PUB=$(cat ./deploy_key.pub)
-ssh user@VM "mkdir -p ~/.ssh && chmod 700 ~/.ssh && \
+ssh -p $SSH_PORT user@VM "mkdir -p ~/.ssh && chmod 700 ~/.ssh && \
   grep -qxF '$PUB' ~/.ssh/authorized_keys 2>/dev/null || echo '$PUB' >> ~/.ssh/authorized_keys; \
   chmod 600 ~/.ssh/authorized_keys"
 ssh -p $SSH_PORT -i ./deploy_key user@VM "echo OK"   # verify before storing
@@ -48,7 +48,9 @@ Copy `assets/docker-compose.yml` and `assets/Caddyfile` into `deploy/`. Adapt:
 
 Copy `assets/vps-deploy.yml` to `.github/workflows/`. Adapt `API_BASE`/`API_HOST`,
 `REMOTE_DIR`, the `Render app.env` env keys (match your framework's config keys),
-the Host header + port in the health check, and the network grep.
+and `SVC`/`PORT` at the top of the health-check script (compose service name + listen
+port). The Host header comes from `API_HOST`, and the compose network is read off the
+running container, so neither needs editing.
 
 ## 5. Secrets into GitHub
 
@@ -70,8 +72,8 @@ gh run watch $(gh run list --workflow=vps-deploy.yml -L1 --json databaseId -q '.
 When a run fails, SSH in and reproduce the exact failing probe — don't guess:
 
 ```bash
-ssh user@VM 'cd ~/app/deploy && docker compose ps && \
-  NET=$(docker network ls --format "{{.Name}}" | grep -E "app|deploy" | head -1) && \
+ssh -p $SSH_PORT user@VM 'cd ~/app/deploy && docker compose ps && \
+  NET=$(docker inspect -f "{{range \$k, \$v := .NetworkSettings.Networks}}{{\$k}} {{end}}" $(docker compose ps -q api) | cut -d" " -f1) && \
   docker run --rm --network "$NET" curlimages/curl:8.11.1 -s -H "Host: your.domain" \
     -o /dev/null -w "code=%{http_code}\n" http://api:8080/health && \
   docker compose logs --tail=40 api'

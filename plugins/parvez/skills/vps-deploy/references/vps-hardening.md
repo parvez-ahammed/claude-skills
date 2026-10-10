@@ -18,7 +18,10 @@ mkdir -p /home/deploy/.ssh && cp ~/.ssh/authorized_keys /home/deploy/.ssh/
 chown -R deploy:deploy /home/deploy/.ssh && chmod 700 /home/deploy/.ssh
 ```
 
-In `/etc/ssh/sshd_config` (or a drop-in in `/etc/ssh/sshd_config.d/`):
+In a drop-in such as `/etc/ssh/sshd_config.d/00-hardening.conf` (sshd keeps the
+FIRST value it reads, and Ubuntu cloud images ship `50-cloud-init.conf` with
+`PasswordAuthentication yes`, so name yours to sort first; verify with
+`sudo sshd -T | grep -i passwordauthentication`):
 
 ```
 PasswordAuthentication no
@@ -101,12 +104,16 @@ SSH. To actually hide/protect the origin:
 - **Restrict 80/443 to Cloudflare's published IP ranges** so direct hits are dropped:
   ```bash
   # fetch ranges and allow only those to 443 (and 80); deny the rest
-  for ip in $(curl -s https://www.cloudflare.com/ips-v4); do sudo ufw allow from $ip to any port 443 proto tcp; done
-  for ip in $(curl -s https://www.cloudflare.com/ips-v4); do sudo ufw allow from $ip to any port 80  proto tcp; done
-  sudo ufw deny 80/tcp; sudo ufw deny 443/tcp     # deny everyone else (rules are ordered; specific allows win)
+  for ip in $(curl -s https://www.cloudflare.com/ips-v4) $(curl -s https://www.cloudflare.com/ips-v6); do
+    sudo ufw allow from $ip to any port 443 proto tcp
+    sudo ufw allow from $ip to any port 80  proto tcp
+  done
+  # Remove the open-to-everyone rules from step 4. UFW is first-match, so appending
+  # `ufw deny 80/tcp` would never fire: the earlier `allow 80/tcp` already matched.
+  sudo ufw delete allow 80/tcp; sudo ufw delete allow 443/tcp
+  sudo ufw status numbered    # confirm only Cloudflare ranges remain on 80/443
   ```
-  (Re-run when Cloudflare updates ranges, or script it as a cron. IPv6 ranges:
-  `https://www.cloudflare.com/ips-v6`.)
+  (Re-run when Cloudflare updates ranges, or script it as a cron.)
 - **Restrict SSH to your IP/VPN** if it's static: `sudo ufw allow from YOUR_IP to any port 49222 proto tcp` and remove the open SSH rule. If your IP is dynamic, rely on key-only + fail2ban + non-standard port.
 - Set Cloudflare SSL/TLS mode to **Full(strict)** and install a **Cloudflare Origin
   Certificate** (or use Caddy DNS-01) so the origin only trusts the CDN.
@@ -121,6 +128,7 @@ sudo apt-get install -y unattended-upgrades && sudo dpkg-reconfigure -plow unatt
 ```
 
 - Disable unused services; keep the box minimal.
-- Don't run containers as root where avoidable; the app images here already use a
-  non-root user.
+- Don't run containers as root where avoidable: add a `USER` line to your Dockerfile
+  (the `runtimes.md` examples don't, so add one; distroless `:nonroot` and recent
+  `aspnet` images ship a non-root user you can switch to).
 - Back up the managed DB on its own schedule (it's external in this architecture).

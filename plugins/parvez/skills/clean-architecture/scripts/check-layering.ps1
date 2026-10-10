@@ -13,7 +13,9 @@ if (-not (Test-Path $Config)) { throw "Config not found: $Config (copy assets/cl
 $cfg = Get-Content $Config -Raw | ConvertFrom-Json
 
 $exts      = @($cfg.fileExtensions); if (-not $exts) { $exts = @('.cs','.ts','.tsx','.java','.kt','.go','.py') }
-$importRe  = $cfg.importLineRegex;  if (-not $importRe) { $importRe = '^\s*(using|import|from|require|#include|use)\b' }
+# Default also catches C# `global using`, CommonJS `const x = require("y")`, and the
+# indented lines inside a Go `import ( ... )` block (a bare or aliased quoted path).
+$importRe  = $cfg.importLineRegex;  if (-not $importRe) { $importRe = '^\s*(global\s+)?(using|import|from|require|#include|use)\b|\brequire\s*\(|^\s*([\w.]+\s+)?"[^"]+"\s*$' }
 $fail = $false
 
 Write-Host "Clean Architecture guard ($Config)`n"
@@ -23,15 +25,17 @@ foreach ($layer in $cfg.layers) {
   $files = @()
   foreach ($r in $layer.roots) {
     $dir = Join-Path $Root $r
-    if (Test-Path $dir) {
-      $files += Get-ChildItem -Path $dir -Recurse -File -ErrorAction SilentlyContinue |
+    if (Test-Path -LiteralPath $dir) {
+      $files += Get-ChildItem -LiteralPath $dir -Recurse -File -ErrorAction SilentlyContinue |
                 Where-Object { $exts -contains $_.Extension }
     }
   }
+  # Roots like src/Domain and src/domain are the same folder on Windows/macOS; scan once.
+  $files = @($files | Sort-Object FullName -Unique)
   $layerHits = 0
   foreach ($f in $files) {
     $n = 0
-    foreach ($line in (Get-Content $f.FullName)) {
+    foreach ($line in (Get-Content -LiteralPath $f.FullName)) {
       $n++
       if ($line -notmatch $importRe) { continue }
       foreach ($bad in $layer.forbidden) {
@@ -47,6 +51,7 @@ foreach ($layer in $cfg.layers) {
 
 # 2) Optional .NET project-reference DAG. Keys are matched as a suffix of the .csproj name.
 if ($cfg.dotnet) {
+  $dagFail = $false
   Write-Host "`n.NET project-reference DAG:"
   $csprojs = Get-ChildItem -Path $Root -Recurse -File -Filter *.csproj -ErrorAction SilentlyContinue
   foreach ($p in $csprojs) {
@@ -54,17 +59,17 @@ if ($cfg.dotnet) {
     $key  = ($cfg.dotnet.PSObject.Properties.Name | Where-Object { $name -like "*$_" } | Select-Object -First 1)
     if (-not $key) { continue }
     $allowed = @($cfg.dotnet.$key)
-    $refs = [regex]::Matches((Get-Content $p.FullName -Raw), 'ProjectReference\s+Include="[^"]*?([\w\.]+)\.csproj"') |
+    $refs = [regex]::Matches((Get-Content -LiteralPath $p.FullName -Raw), 'ProjectReference\s+Include="[^"]*?([\w\.]+)\.csproj"') |
             ForEach-Object { $_.Groups[1].Value }
     foreach ($ref in $refs) {
       $refKey = ($cfg.dotnet.PSObject.Properties.Name | Where-Object { $ref -like "*$_" } | Select-Object -First 1)
       if ($refKey -and ($refKey -notin $allowed)) {
         Write-Host ("  VIOLATION {0} references {1} (layer '{2}' not allowed for '{3}')" -f $name, $ref, $refKey, $key) -ForegroundColor Red
-        $fail = $true
+        $fail = $true; $dagFail = $true
       }
     }
   }
-  if (-not $fail) { Write-Host "  OK - references respect the DAG." -ForegroundColor Green }
+  if (-not $dagFail) { Write-Host "  OK - references respect the DAG." -ForegroundColor Green }
 }
 
 if ($fail) { Write-Host "`nHard violations found." -ForegroundColor Red; exit 1 }

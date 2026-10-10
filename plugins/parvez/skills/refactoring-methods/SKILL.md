@@ -1,6 +1,7 @@
 ---
 name: refactoring-methods
-description: Apply Martin Fowler's refactoring techniques to fix a known code smell. Use when the user knows what is wrong and wants the safe step-by-step mechanics to fix it, "how do I extract this method", "how do I break up this class", "replace this conditional with polymorphism", "introduce a parameter object". Holds the refactoring catalog grouped as composing methods, moving features, organizing data, simplifying conditionals, and simplifying method calls, each with preconditions, ordered mechanics, and a safety rule. Recommends and gives mechanics only; never auto-edits. Spoke of refactoring-guru; usable standalone.
+argument-hint: "[smell or refactoring name] [file or symbol]"
+description: Apply Martin Fowler's refactoring techniques to fix a known code smell. Use when the user knows what is wrong and wants the safe step-by-step mechanics to fix it, "how do I extract this method", "how do I break up this class", "replace this conditional with polymorphism", "introduce a parameter object". Holds the refactoring catalog grouped as composing methods, moving features, organizing data, simplifying conditionals, simplifying method calls, and dealing with generalization, with a one-line mechanic per entry, deep step-by-step mechanics for the most-used ones, and a test-after-each-step safety rule. Recommends and gives mechanics only; never auto-edits. Spoke of refactoring-guru; usable standalone.
 ---
 
 # Refactoring Methods
@@ -15,9 +16,14 @@ changes between test runs.
 
 ## Catalog
 
-Each entry: smell it fixes -> preconditions -> ordered mechanics -> risk. Use the
-scored-precondition idea from `refactoring-guru/references/verdict-format.md` lightly here:
-preconditions decide whether the refactoring is the right move; mechanics decide how.
+Each entry: smell it fixes -> one-line mechanic. Deep entries (preconditions, ordered
+mechanics, risk) are bundled only for the two groups marked with a reference file below. For
+every other entry, expand the one-line mechanic into small steps yourself, each followed by
+a test run per the SAFETY RULE, and state the preconditions you checked. Preconditions
+decide whether the refactoring is the right move; mechanics decide how. (This is the same
+scored-precondition idea the pattern spokes use, applied lightly; the full schema is in
+`${CLAUDE_SKILL_DIR}/../refactoring-guru/references/verdict-format.md` when the plugin is
+installed.)
 
 ### Composing methods (most common; see references/composing-methods.md)
 
@@ -41,6 +47,7 @@ preconditions decide whether the refactoring is the right move; mechanics decide
 | Inline Class | Lazy Class, Speculative Generality | fold a too-small class back into its only user |
 | Hide Delegate | Message Chains | expose a method on the server that hides the delegate chain |
 | Remove Middle Man | Middle Man | let the client talk to the delegate directly |
+| Introduce Foreign Method / Local Extension | Incomplete Library Class | add the missing behavior in a client-side helper or wrapper/extension |
 
 ### Organizing data
 
@@ -51,6 +58,8 @@ preconditions decide whether the refactoring is the right move; mechanics decide
 | Replace Type Code with State/Strategy | type code that drives behavior + changes | route to behavioral-patterns to score State/Strategy |
 | Introduce Parameter Object | Long Parameter List, Data Clumps | group co-traveling params into one object |
 | Preserve Whole Object | Long Parameter List | pass the source object instead of values pulled from it |
+| Encapsulate Field / Encapsulate Collection | Data Class | make fields private behind accessors; return read-only views of collections |
+| Change Bidirectional Association to Unidirectional | Inappropriate Intimacy | drop the back-reference the other side does not need |
 
 ### Simplifying conditionals (see references/simplifying-conditionals.md)
 
@@ -61,6 +70,7 @@ preconditions decide whether the refactoring is the right move; mechanics decide
 | Replace Nested Conditional with Guard Clauses | deep nesting | return early on edge cases, leave the main path flat |
 | Replace Conditional with Polymorphism | Switch Statements on type | one subclass per branch, override the varying method |
 | Introduce Null Object | repeated null checks | a do-nothing object replaces null |
+| Introduce Assertion | Comments stating an assumption | turn the assumption into an assert that fails loudly |
 
 ### Simplifying method calls
 
@@ -71,6 +81,31 @@ preconditions decide whether the refactoring is the right move; mechanics decide
 | Separate Query from Modifier | a method that returns and mutates | split into a pure query and a command |
 | Replace Parameter with Method Call | Long Parameter List | let the callee derive the value itself |
 | Parameterize Method | near-duplicate methods differing by a value | one method taking that value |
+| Remove Setting Method | Data Class, field that should not change after creation | set it in the constructor only, delete the setter |
+
+### Dealing with generalization
+
+| Refactoring | Fixes | One-line mechanic |
+|-------------|-------|-------------------|
+| Pull Up Method / Pull Up Field | Duplicate Code in sibling subclasses | move the identical member into the superclass |
+| Push Down Method / Field | Refused Bequest (member used by one subclass) | move it into the subclass that uses it |
+| Extract Superclass | Duplicate Code, Alternative Classes with Different Interfaces | create a shared parent, pull common members up |
+| Extract Subclass | Large Class with features used only in some cases | move the conditional features into a subclass |
+| Extract Interface | Large Class, several clients using the same subset | declare the subset as an interface |
+| Collapse Hierarchy | Lazy Class, Speculative Generality | merge a subclass that adds nothing into its parent |
+| Form Template Method | Duplicate Code with the same step order | pull the skeleton up, leave varying steps as overrides; route to behavioral-patterns to score Template Method vs Strategy |
+| Replace Inheritance with Delegation | Refused Bequest, Inappropriate Intimacy with a parent | hold the former parent as a field and forward only what is used |
+| Replace Delegation with Inheritance | Middle Man forwarding everything to one delegate | inherit instead, when the subclass truly is-a delegate |
+
+Dead Code has no mechanic beyond "delete it": confirm no callers (search, reflection,
+config, public API), delete, run tests.
+
+## References
+
+- `references/composing-methods.md` - read when giving mechanics for Extract Method,
+  Replace Temp with Query, or Replace Method with Method Object.
+- `references/simplifying-conditionals.md` - read when giving mechanics for Decompose
+  Conditional, Guard Clauses, Replace Conditional with Polymorphism, or Introduce Null Object.
 
 ## Output
 

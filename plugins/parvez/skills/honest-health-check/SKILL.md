@@ -1,10 +1,10 @@
 ---
 name: honest-health-check
 description: >-
-  Design and verify service health endpoints that report REAL readiness (database and
-  critical dependencies reachable) instead of a hardcoded 200, and wire them correctly
-  into deploy gates, container HEALTHCHECKs, and orchestrator probes. Use this whenever
-  you add or review a /health or /healthz endpoint, set up a Docker/Kubernetes/compose
+  Designs and verifies service health endpoints that report REAL readiness (database and
+  critical dependencies reachable) instead of a hardcoded 200, and wires them correctly
+  into deploy gates, container HEALTHCHECKs, and orchestrator probes. Use when
+  adding or reviewing a /health or /healthz endpoint, setting up a Docker/Kubernetes/compose
   health check or a post-deploy probe, or when the user asks "why did the deploy go
   green but the app is down?", "add a readiness probe", "make the health check honest",
   or is debugging a service that's "up" but not actually serving. A health endpoint

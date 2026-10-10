@@ -1,6 +1,7 @@
 ---
 name: timesheet-from-transcripts
-description: Use when the user needs to fill in a timesheet or time log and asks what they worked on for one or more past dates - "I need to fill my timesheet for these days", "what did I do on the 13th and 14th", "fill up my time log for last week", "search my conversations and check what I did on Monday". Reconstructs ticket numbers, short descriptions and non-overlapping time blocks per day from local Claude Code session transcripts under ~/.claude/projects, ready to paste into a time tracker.
+description: Reconstructs what the user worked on for one or more past dates, as paste-ready timesheet rows. Use when the user needs to fill in a timesheet or time log - "I need to fill my timesheet for these days", "what did I do on the 13th and 14th", "fill up my time log for last week", "search my conversations and check what I did on Monday". Produces ticket numbers, short descriptions and non-overlapping time blocks per day from local Claude Code session transcripts under ~/.claude/projects, ready to paste into a time tracker.
+argument-hint: "[date | date list | range like \"last week\"]"
 ---
 
 # Timesheet from transcripts
@@ -38,8 +39,11 @@ Also confirm, or ask once:
 
 Transcripts live at `~/.claude/projects/<project-dir>/*.jsonl` (on Windows,
 `%USERPROFILE%\.claude\projects\`). There is one directory per working directory Claude Code was
-opened in; the name is the path with separators replaced by `-` (for example
-`~/code/my-app` gives `-home-me-code-my-app`). Subagent transcripts sit in subfolders.
+opened in; the name is the absolute path with every character that is not a letter or digit replaced by `-`
+(for example `/home/me/code/my-app` gives `-home-me-code-my-app`, `C:\code\my.app` gives
+`C--code-my-app`). Subagent transcripts sit in subfolders
+(`<project-dir>/<session-id>/subagents/*.jsonl`); the grep below skips them, which is usually what
+you want, since they run inside a parent session that already covers the time.
 
 Find files with activity on each target date without reading them:
 

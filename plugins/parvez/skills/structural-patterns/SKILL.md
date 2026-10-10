@@ -1,5 +1,6 @@
 ---
 name: structural-patterns
+argument-hint: "[file or symbol]"
 description: Score whether a structural design pattern (Adapter, Bridge, Composite, Decorator, Facade, Flyweight, Proxy) fits a code site, and recommend it only when scored preconditions are met. Use when the user asks "should I use an adapter/decorator/facade here", "where can I apply a structural pattern", or when object composition is awkward (incompatible interfaces, subclass explosion across two dimensions, part-whole trees, runtime-added responsibilities, message chains into a subsystem, memory blowup from many similar objects, controlled access). Each pattern has opportunity signatures, weighted preconditions, a threshold, and hard-veto anti-indicators; emits APPLY / CONSIDER / REJECT with cited evidence. Spoke of refactoring-guru; usable standalone.
 ---
 
@@ -7,7 +8,12 @@ description: Score whether a structural design pattern (Adapter, Bridge, Composi
 
 Structural patterns are about composing objects and classes into larger structures while
 keeping them flexible. You score a site and report a verdict; you do not edit code. Follow
-the shared scoring rules in `refactoring-guru/references/verdict-format.md`.
+the shared scoring rules in `${CLAUDE_SKILL_DIR}/../refactoring-guru/references/verdict-format.md` (bundled with
+the refactoring-guru skill). If it is not installed, the rules are: a precondition scores only
+with a cited `file:line`; any anti-indicator is an absolute veto (REJECT); score >= threshold
+with the anchor met -> APPLY, near-miss or cost outweighs the problem -> CONSIDER, else
+REJECT; apply language notes last and downgrade one step when an idiom makes the pattern
+redundant.
 
 ---
 

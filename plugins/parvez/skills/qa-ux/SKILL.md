@@ -1,6 +1,20 @@
 ---
 name: qa-ux
-description: Pressure-test a RUNNING web app and produce TWO executive-grade HTML reports by default - a QA release report AND a UX product-experience audit (qa-report.html + ux-report.html, cross-linked). (1) QA pass - a Staff-QA release report (14 sections cover/release-recommendation/exec-summary/scope/traceability/per-scenario-execution/defect-tickets/evidence/API/coverage/risk/readiness/actions/appendix) backed by Playwright screenshots + API/ffprobe evidence. (2) UX pass - a Product Experience audit from six personas (Senior Product Designer, UX Researcher, Frontend Reviewer, Design Systems Lead, first-time user, impatient customer) across six journeys, scoring confusing/ugly/cheap/unfinished/inconsistent/frustrating/cognitively-heavy moments with a Product Experience Score and prioritized redesigns. Runs BOTH passes unless the user scopes to just one. Use when the user asks to "QA the app", "release readiness", "write a QA/test report", OR "UX review", "design review", "product experience audit", "find what feels confusing/ugly/unfinished/cheap", "judge the UX", "where would users hesitate or abandon", or invokes qa-ux. Drives the browser for screenshot proof (incl. mobile via viewport resize); never invents data; marks UNKNOWN when not verified.
+description: >-
+  Pressure-tests a RUNNING web app and produces two cross-linked, executive-grade HTML reports by
+  default: a Staff-QA release report (qa-report.html, 14 sections from release recommendation to
+  defect tickets and risk register) and a Product Experience audit (ux-report.html, six personas
+  across six journeys, scoring confusing, ugly, cheap, unfinished, inconsistent or frustrating
+  moments into a Product Experience Score with prioritized redesigns). Every claim is backed by a
+  browser screenshot or out-of-band evidence (API responses, data checks, file probes); nothing is
+  invented and anything unverified is marked UNKNOWN. Use when the user asks to "QA the app",
+  "release readiness", "write a QA/test report", "UX review", "design review", "product experience
+  audit", "judge the UX", or invokes qa-ux.
+when_to_use: >-
+  Also triggers on "find what feels confusing/ugly/unfinished/cheap", "where would users hesitate or
+  abandon", "is this ready to ship", or a request for screenshot-backed QA including mobile (via
+  viewport resize). Runs BOTH passes unless the user scopes to just one ("just QA", "only UX").
+argument-hint: "[app-url] [qa|ux]"
 ---
 
 # qa-ux
@@ -26,14 +40,15 @@ that single report. If unsure, do both.
 1. **Screenshots are the source of truth.** Capture every screen and every state. If it *feels* wrong
    (spacing, hierarchy, alignment, tone, weight), report it. Never write "works as expected" - describe
    the experience quality.
-2. **Evidence or it didn't happen.** UI claims need a screenshot; correctness claims (credits, media,
-   APIs) need a real number / status code / ffprobe output. A `200` or a status card is not proof a
+2. **Evidence or it didn't happen.** UI claims need a screenshot; correctness claims (balances, stored
+   records, generated files, APIs) need a real number / status code / probe output (e.g. a DB row,
+   a file's size or `ffprobe` result). A `200` or a status card is not proof a
    thing is real - probe the artifact.
 3. **Never invent data.** Not observed -> `UNKNOWN` / `NOT RUN`. UNKNOWN is an honest result.
 4. **Explore, don't speed-run.** Optimize for "how many moments would make a real user hesitate?",
    not test count. Spend the time on the high-traffic surfaces.
-5. **Keep the main session lean.** Fan out independent work (test-case generation from code, API/ledger
-   checks, ffmpeg/ffprobe probes) to background subagents; the main session owns the single shared
+5. **Keep the main session lean.** Fan out independent work (test-case generation from code, API/data
+   checks, file/media probes) to background subagents; the main session owns the single shared
    browser (serial). Capture the mobile journey with a viewport resize (e.g. 390x844).
 6. **Self-contained HTML report**: dark theme, modern typography, generous spacing, Linear/Notion/Stripe
    feel - sticky side nav, severity color system, collapsible `<details>`, status/test badges, callout
@@ -46,7 +61,7 @@ that single report. If unsure, do both.
    Mark UNKNOWN if not derivable.
 2. Map surfaces (routes, primary flows). QA: generate the test-case catalogue from code first.
 3. Drive the browser per the mode's journeys/scenarios; screenshot every state; capture console.
-4. Verify correctness out-of-band where it matters (API, DB deltas, ffprobe) via subagents.
+4. Verify correctness out-of-band where it matters (API responses, DB deltas, file probes) via subagents.
 5. Assemble the report in the mode's structure. No invented data. Open it.
 
 ## Severity (shared)

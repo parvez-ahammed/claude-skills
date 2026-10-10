@@ -1,6 +1,15 @@
 ---
 name: platform-audit
-description: Use when you want to find what could be made common, shared, or reusable across a milestone/phase/backlog of feature issues so features stop reimplementing the wheel, and want it done with software-engineering judgment (DRY, KISS, YAGNI, rule-of-three) rather than abstraction for its own sake. Produces a shared-platform design: the candidate common engines/primitives/UI, a verdict on each (build-now / narrow / resist), a cross-phase ownership check (what an earlier phase already owns so this one depends not rebuilds), and a build order. Invoke for "find common patterns", "what can be shared/reused", "make a platform layer", "are we reimplementing this", "decompose the milestone into shared + thin", "review for DRY across these issues".
+description: >-
+  Finds what could be made common, shared, or reusable across a milestone, phase or backlog of
+  feature issues so features stop reimplementing the wheel, using software-engineering judgment
+  (DRY, KISS, YAGNI, rule-of-three) rather than abstraction for its own sake. Produces a
+  shared-platform design: the candidate common engines/primitives/UI, a verdict on each (build-now
+  / build-but-narrow / keep-per-feature), a list of over-abstractions to resist, a cross-phase ownership check (what an earlier phase already owns so this
+  one depends not rebuilds), and a build order. Invoke for "find common patterns", "what can be
+  shared/reused", "make a platform layer", "are we reimplementing this", "decompose the milestone
+  into shared + thin", "review for DRY across these issues".
+argument-hint: "[milestone | phase | label | issue list]"
 ---
 
 # Platform Audit
@@ -9,7 +18,7 @@ description: Use when you want to find what could be made common, shared, or reu
 
 A milestone of feature issues, read one at a time, hides the fact that most of them want the same
 machinery (a generation engine, a provider call, a prompt, an upload, a filtered grid, an async
-job). Built blind, each feature reimplements it, so you get N nightmares and N security surfaces.
+job). Built blind, each feature reimplements it, so you get N copies to maintain and N security surfaces.
 This skill reads the whole set and proposes a **shared platform**: a small set of engines,
 primitives, and UI the features *consume*, plus a thin layer per feature on top.
 
@@ -30,7 +39,8 @@ contains and grooming sharpens one issue, this decides what across the set becom
 ## Inputs
 
 A milestone title/number, a phase, a label, or an explicit issue list. Resolve to a concrete set
-(`gh issue list --milestone "<title>" --json number,title`). Read the relevant bodies.
+(for example `gh issue list --milestone "<title>" --json number,title` on GitHub, or the equivalent
+query in Jira, Azure DevOps, GitLab or Linear). Read the relevant bodies.
 
 ## Process
 
@@ -52,7 +62,7 @@ For each candidate, before proposing to build it, determine:
   primitive (`grep` for it) and the right move is to promote/reuse, not green-field.
 - Is it **owned by an issue in another milestone/phase**? Re-sequenced milestones are the usual
   cause of drift: a piece sits in a phase that used to be earlier. If an earlier phase owns it
-  (credit ledger, tenancy, auth), this milestone **depends on it**, it does not rebuild it.
+  (billing/usage ledger, tenancy, auth), this milestone **depends on it**, it does not rebuild it.
 - Or is it **truly unowned** new work this milestone must create?
 Output: built-in-code / owned-by-#n-in-phase-X / unowned, with evidence.
 
@@ -69,7 +79,7 @@ Verdict: **build-now** / **build-but-narrow** (with the narrowed scope) / **keep
 
 ### 4. Build order
 Topologically order the platform pieces so the shared layer exists before the features that
-consume it. Pure utilities (no deps) first; the foundation issue (models/credit/queue) next;
+consume it. Pure utilities (no deps) first; the foundation issue (data model, billing, queue) next;
 engines that need the foundation after; the UI kit after the shell/components; features last.
 
 ## Output format
@@ -86,8 +96,8 @@ Always produce, in this order:
 4. **Missed commons** - anything shared across >= 3 issues your list did not name.
 5. **Build order** - the dependency-ordered sequence, naming which issues each piece unblocks.
 6. (when authorized) **The platform spec + issues** - write a single platform doc (the SSOT), then
-   create the build-first platform issues with `blocks` / `blocked-by` wired so feature issues
-   depend on them, and fold foundation-level pieces (cost table, scoping, saga) into the existing
+   create the build-first platform issues with `blocks` / `blocked-by` (or your tracker's dependency links) wired so feature issues
+   depend on them, and fold foundation-level pieces (cost table, scoping, multi-step transaction handling) into the existing
    foundation issue rather than spawning micro-issues.
 
 ## Quality bar

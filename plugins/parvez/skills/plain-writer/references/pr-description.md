@@ -56,7 +56,7 @@ Template headings differ between repos. Map each heading to the closest guide be
 
 Two to four short paragraphs. Open on the user-visible fact, never on the change.
 
-> Users cannot select **Duration Hours** when they build an export template. Thus they send the value as
+> Users cannot select **Due Date** when they build an export template. Thus they send the value as
 > a custom field.
 
 Then the mechanism, one idea per sentence:

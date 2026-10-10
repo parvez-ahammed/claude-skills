@@ -1,20 +1,21 @@
 ---
 name: demo-maker
 description: >-
-  Build a pixel-exact, clickable HTML demo of a planned workflow that looks exactly like the app's
-  real components - web via a DOM + CSS snapshot of the running, signed-in app; desktop (WinForms)
-  via the app's own controls rendered off-screen. Use whenever the user asks for an HTML demo,
-  clickable mockup, prototype, "pixel perfect demo", "how exactly will this workflow look", "show
-  the PO / stakeholders how it will look", or a demo for a ticket or user story in a web app, a
-  desktop client or both - even if they do not say "skill". Not for free-form design exploration
-  or Figma work.
+  Builds a pixel-exact, clickable HTML demo of a planned workflow that looks exactly like the app's
+  real components, captured as a DOM + CSS snapshot of the running, signed-in web app (with an
+  optional Windows desktop adapter that renders a WinForms app's own controls off-screen). Use
+  whenever the user asks for an HTML demo, clickable mockup, prototype, "pixel perfect demo", "how
+  exactly will this workflow look", "show the product owner / stakeholders how it will look", or a
+  demo for a ticket or user story - even if they do not say "skill". Not for free-form design
+  exploration or Figma work.
+argument-hint: "[ticket-id or story]"
 ---
 
 # demo-maker
 
-Build a demo of a new workflow from the app's own rendered components, not from look-alikes. Web:
-the live page's DOM and CSS, captured from the running app. Desktop: the client's own controls,
-rendered to PNG. The output is a folder of static HTML (for example `<work-dir>/<ticket>/demo/`).
+Build a demo of a new workflow from the app's own rendered components, not from look-alikes. The
+main path is web: the live page's DOM and CSS, captured from the running app. An optional adapter
+covers Windows desktop apps built with WinForms: the app's own controls, rendered to PNG. The output is a folder of static HTML (for example `<work-dir>/<ticket>/demo/`).
 No product code changes.
 
 The value is the capture technique and its traps. A hand-written mockup that is "close to" the app
@@ -63,9 +64,11 @@ This decides every design question:
 5. **Compose.** New states use only class names found in the captured parts. `demo.css` holds only
    layout the new sections add (gap, flex), plus the demo step panel. Keep today's unchanged screen
    as its own page.
-6. **Desktop (optional).** See `references/capture.md` > Desktop capture. `scripts/deskshot` renders
+6. **Desktop (optional adapter, Windows + WinForms only).** Skip unless the change also touches a
+   WinForms desktop app. See `references/capture.md` > Desktop capture. `scripts/deskshot` renders
    real WinForms forms off-screen with `PrintWindow` and composites them over a screenshot of the
-   running client.
+   running app. Other desktop stacks need their own renderer; the principle (real controls, not
+   look-alikes) still holds.
 7. **Verify.** Screenshot every step with browser automation, then look at each image. Check:
    - every web font and icon font reports `loaded` (`document.fonts`);
    - no page errors in the console;
@@ -74,13 +77,13 @@ This decides every design question:
    - the app's API log shows no write calls during capture.
 8. **Deliver.** `index.html` holds the step thumbnails, the rules with their sources, the text
    register and the open questions. Open it for the user. List every process you started (API,
-   dev server, desktop client, http server).
+   dev server, desktop app, http server).
 
 ## Text register template
 
-| # | Text | Where (web/desktop) | Category | Source or reason |
+| # | Text | Where (web, plus desktop if used) | Category | Source or reason |
 |---|------|------|----------|------------------|
-| 1 | Upload Files | web toolbar, desktop toolbar | Reworded | Ticket: several files. Was "Upload File" |
+| 1 | Upload Files | web toolbar | Reworded | Ticket: several files. Was "Upload File" |
 
 Categories:
 - **Reused**: today's text, cite `file:line`.
@@ -125,7 +128,7 @@ A reworded text that the ticket does not require goes back to today's wording.
 | Mistake | Fix |
 |---|---|
 | Hand-written CSS "close to" the app | Only captured classes; measure against the capture page |
-| Web and desktop wording drift | One register row per meaning, both columns filled |
+| Web and desktop wording drift (when both are demoed) | One register row per meaning, both places filled |
 | Inventing server messages | Copy real messages from backend code, or list them as Sample data |
 | Treating the scripts as finished tools | They are a starting point: state names, faked methods, text replacements and new screens change per demo |
 | New wording, chips or progress lines because research suggests them | Reuse the existing text or component; list the idea as an open question |
@@ -134,10 +137,13 @@ A reworded text that the ticket does not require goes back to today's wording.
 
 ## Reference map
 
+All paths below are relative to this skill's folder (`${CLAUDE_SKILL_DIR}`).
+
 - `references/capture.md` - read before phase 4 (web) and phase 6 (desktop): exact steps and traps.
 - `scripts/helpers.js` - load into the signed-in page: `__snap`, `__download`, `__blockWrites`,
   `__fakeModule`, `__dropFiles`, `__findByComponent`.
 - `scripts/extract.py` - snapshots to `demo/assets/app.css` + `capture/parts/*.body.html`.
 - `scripts/build.py` - parts to demo pages; edit `PAGES` and `REPLACEMENTS` per demo.
 - `scripts/demo.css` - the demo step panel and a few layout helpers.
-- `scripts/deskshot/` - net8.0-windows tool that renders WinForms forms to PNG and composites them.
+- `scripts/deskshot/` - optional Windows adapter: a net8.0-windows tool that renders WinForms forms to
+  PNG and composites them. Only needed for phase 6.

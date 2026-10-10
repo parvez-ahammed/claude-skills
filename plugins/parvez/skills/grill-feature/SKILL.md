@@ -1,16 +1,17 @@
 ---
 name: grill-feature
 description: >-
-  Stand up a "grill room": independent, code-grounded agents that interrogate shipped features at
+  Stands up a "grill room": independent, code-grounded agents that interrogate shipped features at
   the PROMISE level (does the real user-facing promise actually hold in the code, not "does it
   compile"), plus an optional CEO cost evaluator for unit economics. Each interrogator asks
   fundamental questions and ANSWERS them by reading the real code, then returns a verdict
   (BULLETPROOF / CRACKED / FAKE) with file:line evidence. Use whenever the request is to "grill"
   or pressure-test a feature, "is X actually ready / bulletproof", "can users really do Y" (e.g.
-  publish to a third-party platform, download the export, does the stitch seam hold), audit
+  publish to a third-party platform, download the export, does checkout really charge once), audit
   promise-vs-reality across a codebase, interview features by reviewing code, make features
   bulletproof, or evaluate whether the cost/margin is too much. One feature (inline) or a whole
   release/phase (workflow sweep).
+argument-hint: "[feature name | release or phase]"
 ---
 
 # Grill room
@@ -39,14 +40,15 @@ For one feature:
    Do not stop at the route.
 3. Ask 3-6 questions at the right **altitude**. Good questions probe the promise, not the syntax:
    - Does the action actually reach the external system (publish actually hits the platform; the
-     video is actually uploaded), or does it stop at our DB?
+     file is actually uploaded), or does it stop at our DB?
    - Is money/credit exact under retry and double-click (idempotent), and is a failure refunded?
    - Is tenant/owner isolation real (can account A read/mutate account B's rows)? Any IDOR?
    - What happens to an existing user with an expired token / a reconnect-required integration?
    - Is the persisted state real, or a no-op / stub / mock / fabricated number?
-   - For configurable / AI features: is the config/override (model, settings, identity lock)
+   - For configurable / AI features: is the config/override (model, settings, feature flags)
      actually USED at run time, or stored and ignored?
-   - For multi-step media (stitching): does CONTENT continuity hold across the cut, or only format?
+   - For multi-step pipelines: does the CONTENT survive each hand-off between steps, or only the
+     format (the file exists, but is it the right data)?
 4. **Answer each question from the code**, citing `file:line`. No vibes.
 5. Assign a verdict and list concrete gaps.
 
@@ -69,19 +71,25 @@ one feature, and report its verdict. Use this for a "grill X" request about a si
 ### A whole release/phase, as a sweep (the room)
 
 Run the bundled workflow, which fans out one interrogator per feature plus the CEO cost pass and
-synthesizes one report. Point `scriptPath` at the `room-workflow.js` shipped beside this skill
-(in a plugin install, under `plugins/parvez/skills/grill-feature/room-workflow.js`; copy it into
-your repo if you prefer a stable path):
+synthesizes one report. The script ships beside this skill at
+`${CLAUDE_SKILL_DIR}/room-workflow.js`. Pass your feature list as `args` instead of editing it:
 
 ```
-Workflow({ scriptPath: "<path-to>/grill-feature/room-workflow.js" })
+Workflow({
+  scriptPath: "${CLAUDE_SKILL_DIR}/room-workflow.js",
+  args: {
+    features: [{ id, area, name, promise, hints }, ...],
+    costPass: false,          // true only for products with metered or paid actions
+    date: "YYYY-MM-DD"        // optional; stamped into the report heading
+  }
+})
 ```
 
-The shipped `FEATURES` array is a worked EXAMPLE. Replace it with your own `{ id, area, name,
-promise, hints }` entries before launching, and drop the CEO cost pass if your product has no
-per-action cost. The workflow runs in the background and returns `{ counts, interrogations, cost,
-report }`. **Write the `report` to a dated file** (e.g. `docs/reviews/grill-<scope>-<date>.md`) so
-stakeholders have the artifact (pass the date in, the workflow cannot read the clock).
+Without `args.features` the script runs its built-in worked EXAMPLE list (generic auth, payments
+and publish features), which is only useful as a demo. The workflow runs in the background and
+returns `{ counts, interrogations, cost, report }`. **Write the `report` to a dated file** (e.g.
+`docs/reviews/grill-<scope>-<date>.md`) so stakeholders have the artifact. Pass the date in
+through `args.date`: a workflow script cannot read the clock.
 
 The workflow is the deterministic engine; this skill is the protocol and the verdict bar. Keep the
 interrogators read-only and code-grounded, keep the CEO pass (when used) tied to real `file:line`

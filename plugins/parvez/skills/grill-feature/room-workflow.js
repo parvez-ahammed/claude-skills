@@ -9,7 +9,7 @@ export const meta = {
 }
 
 // ---------------------------------------------------------------------------
-// REPLACE THIS ARRAY with your own features before launching.
+// Pass your own features as args.features (preferred), or replace this array.
 // Each entry is one feature to interrogate. Hidden/UI-gated features still
 // count: the interrogator judges the CODE, not the UI.
 //   id      - short slug for labels
@@ -18,14 +18,17 @@ export const meta = {
 //   promise - the one-sentence thing the feature claims to do for a user
 //   hints   - where to start reading (files, routes, services). The agent
 //             follows the real call chain from here; do not stop at the route.
-// The entries below are a WORKED EXAMPLE for a generic SaaS app. Delete them.
+// The entries below are a WORKED EXAMPLE for a generic SaaS app.
 // ---------------------------------------------------------------------------
-const FEATURES = [
+const EXAMPLE_FEATURES = [
   { id: 'auth-emailpw', area: 'Auth', name: 'Email/password auth (login, signup, verify, reset)', promise: 'A user can sign up, verify email, log in, and reset password against real persisted state with rate limiting.', hints: 'auth routes -> auth controller -> auth service; the user/session models; the email-verification + reset-token flow' },
   { id: 'auth-oauth', area: 'Auth', name: 'OAuth / social sign-in', promise: 'A user can sign in via an external provider and a real session is created.', hints: 'oauth url + callback handlers, the token exchange, session creation' },
   { id: 'pay-checkout', area: 'Payments', name: 'Checkout + webhook idempotency', promise: 'Checkout works, payment webhooks are processed exactly once, subscription/entitlement state is correct.', hints: 'billing controller/service, checkout route, webhook handler, webhook-idempotency store, subscription model' },
   { id: 'core-publish', area: 'Core', name: 'Publish/export to an external system', promise: 'A user action actually reaches the external system, not just our own DB.', hints: 'the publish/export route -> job/queue -> the outbound provider call; confirm it leaves our system' },
 ]
+
+const A = args || {}
+const FEATURES = Array.isArray(A.features) && A.features.length ? A.features : EXAMPLE_FEATURES
 
 const INTERROGATION = {
   type: 'object', additionalProperties: false,
@@ -54,8 +57,8 @@ const COST = {
 
 const SYNTH = { type: 'object', additionalProperties: false, required: ['report'], properties: { report: { type: 'string' } } }
 
-// Set to false for a product with no per-action / metered cost to skip the CEO pass.
-const RUN_COST_PASS = true
+// args.costPass: false skips the CEO pass (products with no per-action / metered cost).
+const RUN_COST_PASS = A.costPass !== false
 
 const interrogate = (f) => `You are a skeptical senior engineer + QA, interrogating ONE shipped feature at the PROMISE level, by reading the ACTUAL code. Read-only.
 
@@ -82,7 +85,7 @@ Produce:
 - verdict: one paragraph: is the cost too much, where is the product exposed to negative margin.
 - concerns: concrete bullet risks (e.g. unmetered retries, a free-tier action that hits a paid provider, a missing rate limit on an expensive call).`
 
-const synthPrompt = (rows, cost) => `You are the synthesis lead. Below are JSON interrogation verdicts for each feature${cost ? ', plus a CEO cost evaluation' : ''}. Write ONE markdown report.
+const synthPrompt = (rows, cost) => `You are the synthesis lead. Below are JSON interrogation verdicts for each feature${cost ? ', plus a CEO cost evaluation' : ''}. Write ONE markdown report${A.date ? ` dated ${A.date}` : ''}.
 
 INTERROGATIONS:
 ${JSON.stringify(rows, null, 1)}
@@ -98,6 +101,7 @@ Keep evidence (file:line) inline. Be direct; this goes to stakeholders.
 Return { report: <the full markdown> }.`
 
 phase('Interrogate')
+if (FEATURES === EXAMPLE_FEATURES) log('No args.features given: running the built-in EXAMPLE feature list')
 log(`Interrogating ${FEATURES.length} features${RUN_COST_PASS ? ' + CEO cost pass' : ''}`)
 const [interrogations, cost] = await Promise.all([
   parallel(FEATURES.map((f) => () =>
@@ -123,5 +127,5 @@ return {
   },
   interrogations: clean,
   cost,
-  report: synth.report,
+  report: synth ? synth.report : null,
 }

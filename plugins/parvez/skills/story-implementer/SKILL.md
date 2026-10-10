@@ -1,11 +1,12 @@
 ---
 name: story-implementer
 description: >-
-  Drive ONE user story, feature request or ticket from raw ask to verified, review-ready code:
+  Drives ONE user story, feature request or ticket from raw ask to verified, review-ready code:
   skeptical requirement analysis, code exploration, task breakdown, user picks tasks, implement,
   test, verify. Use when the user hands over a single scoped feature and wants the whole process
   driven, not a one-off edit. Triggers on "/story-implementer", "build this story", "implement this
   ticket", "drive this feature", or a single scoped feature ask. One command, one user story.
+argument-hint: "[story text | ticket id | issue URL]"
 ---
 
 # story-implementer - one command, one user story
@@ -67,7 +68,7 @@ for answers to the blocking questions**:
 - **Ambiguities** - every term or scope that can be read two ways.
 - **Edge cases** - empty, null, max, concurrent, duplicate, partial failure, retry, ordering.
 - **Tenants, roles, security** - tenant isolation, data visible to the wrong customer, role gates,
-  owner-side vs partner-side differences. Assume the wrong tenant or role can reach the data until you
+  differences between the sides of a shared record (for example owner and partner). Assume the wrong tenant or role can reach the data until you
   have read the gate.
 - **Destructive paths** - delete, void, overwrite, dedup, reconcile. "Handled automatically" is a flag
   to trace, not a reassurance. Trace the identity key (id, GUID, primary key) from where it is created,
@@ -96,7 +97,7 @@ independently shippable tasks**, each one a coherent slice, not a layer.
   (saving and storage) and forced a rework PR.
 
 **Entry-point table before code.** For each rule you add or change, list every place that must apply
-it: create wizard, editor, viewer, duplicate; owner and partner; send and receive; each integration;
+it: create flow, editor, viewer, duplicate; each side of a shared record; send and receive; each integration;
 server check and client check; each reader of the value. Mark each row "changed", "not needed because
 ...", or "missed". Save it in the notes folder. Do not start Phase 4 with an empty row.
 

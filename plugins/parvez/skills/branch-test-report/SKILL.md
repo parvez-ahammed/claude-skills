@@ -1,6 +1,7 @@
 ---
 name: branch-test-report
-description: Use when asked to test a branch, pull request or ticket against the real running app and hand back proof - "run the tests and give me a report", "test this branch end to end", "automated test with visual verification", "QA this with screenshots", "give me a test report for this PR". Runs the backend tests, seeds and cleans test data, drives the API and the browser, and writes one self-contained HTML report with screenshots that a product owner can read. Produces a run against the live app, not a reading of the diff.
+description: Tests a branch, pull request or ticket against the real running app and hands back proof. Runs the backend tests, seeds and cleans test data, drives the API and the browser, and writes one self-contained HTML report with screenshots that a product owner can read - a run against the live app, not a reading of the diff. Use when asked "run the tests and give me a report", "test this branch end to end", "automated test with visual verification", "QA this with screenshots", or "give me a test report for this PR".
+argument-hint: "[branch | PR number | ticket id]"
 ---
 
 # Branch test report
@@ -83,7 +84,7 @@ If the folder already holds numbered files, continue that sequence.
 
 ## Report rules - the reader is a product owner
 
-- **Compare the base branch with this branch only.** "On dev the grid shows X. On this branch it
+- **Compare the base branch with this branch only.** "On the base branch the grid shows X. On this branch it
   shows Y." No history of how the branch got there.
 - **No commit hashes, no local file names, no evidence paths** in the visible text. Screenshots
   are embedded as data URIs, so the report is one file to share. Name the screen and the steps, not the source file.
